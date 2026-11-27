@@ -4,7 +4,7 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { PublicKey, Transaction } from "@solana/web3.js";
-import { Coins, Gavel, Landmark, Wallet } from "lucide-react";
+import { Check, Coins, Gavel, Landmark, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchGroup, getJson, postJson, relay, relayWithWallet } from "@/lib/anuma/browser";
 import { depositIx, markDefaultIx } from "@/lib/anuma/program";
@@ -45,7 +45,7 @@ function Stat({ label, value, unit }: { label: string; value: string | null; uni
     <div className="min-w-0 px-5 py-4">
       <dt className="text-caption text-muted">{label}</dt>
       <dd className="mt-1 flex items-baseline gap-1.5">
-        {value === null ? <Skeleton className="h-6 w-20" /> : <span className="text-title font-semibold tabular text-ink">{value}</span>}
+        {value === null ? <Skeleton className="h-6 w-20" /> : <span className="text-2xl font-semibold tracking-tight tabular text-ink">{value}</span>}
         {unit && value !== null && <span className="text-small text-muted">{unit}</span>}
       </dd>
     </div>
@@ -192,13 +192,10 @@ export function PoolApp() {
   const defaulted = lines.filter((l) => l.defaulted).length;
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="max-w-[46rem]">
-        <h1 className="text-heading font-semibold tracking-tight text-ink">Lending pool</h1>
-        <p className="mt-2 text-lead text-ink-2">
-          Every line below belongs to a KYC-verified person, and none of them says which person. Lenders price the pool from repayment behavior, not
-          from identities.
-        </p>
+    <div className="flex flex-col gap-10">
+      <header className="max-w-2xl">
+        <h1 className="text-3xl font-semibold tracking-tight text-ink md:text-4xl">Lending pool</h1>
+        <p className="mt-2 text-body text-ink-2">Every line belongs to a verified person. None of them says which one, so you lend on repayment behavior.</p>
       </header>
 
       {error && (
@@ -207,7 +204,7 @@ export function PoolApp() {
         </Notice>
       )}
 
-      <dl className="grid grid-cols-2 divide-line rounded-panel border border-line sm:grid-cols-4 sm:divide-x [&>*:nth-child(-n+2)]:border-b [&>*:nth-child(-n+2)]:border-line sm:[&>*:nth-child(-n+2)]:border-b-0">
+      <dl className="grid grid-cols-2 divide-line rounded-panel bg-bg shadow-[var(--shadow-raise)] ring-1 ring-line sm:grid-cols-4 sm:divide-x [&>*:nth-child(-n+2)]:border-b [&>*:nth-child(-n+2)]:border-line sm:[&>*:nth-child(-n+2)]:border-b-0">
         <Stat label="Vault liquidity" value={data ? formatUsdc(data.vaultBalance) : null} unit="mUSDC" />
         <Stat label="Outstanding" value={data ? formatUsdc(outstanding) : null} unit="mUSDC" />
         <Stat label="Credit lines" value={data ? String(lines.length) : null} unit={data ? `of ${data.memberCount} verified` : undefined} />
@@ -264,12 +261,19 @@ export function PoolApp() {
           <Panel title="Add liquidity" description="Deposits fund every line in the pool.">
             {data ? <Deposit usdcMint={data.usdcMint} onDone={reload} /> : <Skeleton className="h-24 w-full" />}
           </Panel>
-          <Panel title="Why lenders can trust anonymous lines">
-            <ul className="flex flex-col gap-3 text-small text-ink-2">
-              <li>Each line needs a zero-knowledge proof of a KYC-verified person, checked on chain.</li>
-              <li>One person can hold one line, ever. A defaulter cannot come back with a new wallet.</li>
-              <li>Limits start small and grow only with on-time repayments, so exposure follows behavior.</li>
-              <li>Any default is visible here and can be flagged by anyone after {data ? formatSeconds(Number(data.graceSecs)) : "the"} grace.</li>
+          <Panel title="Why anonymous lines are safe to fund">
+            <ul className="flex flex-col gap-3.5 text-small text-ink-2">
+              {[
+                "Every line needs a zero-knowledge proof of a verified person, checked on chain.",
+                "One person holds one line, ever. A defaulter cannot return with a new wallet.",
+                "Limits start small and grow only with on-time repayments.",
+                `Anyone can flag a default here once ${data ? formatSeconds(Number(data.graceSecs)) : "the"} of grace has passed.`,
+              ].map((point) => (
+                <li key={point} className="flex gap-3">
+                  <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-ink" />
+                  {point}
+                </li>
+              ))}
             </ul>
           </Panel>
         </aside>

@@ -103,13 +103,11 @@ export function MerchantApp() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="max-w-[46rem]">
-        <p className="text-small font-medium text-muted">Demo merchant</p>
-        <h1 className="mt-1 text-heading font-semibold tracking-tight text-ink">Corner Store</h1>
-        <p className="mt-2 text-lead text-ink-2">
-          A shop that accepts Solana Pay and has never heard of Anuma. It issues a standard invoice and checks the payment by its reference key.
-        </p>
+    <div className="flex flex-col gap-10">
+      <header className="max-w-2xl">
+        <p className="inline-flex items-center gap-2 rounded-full bg-bg px-3 py-1 text-caption font-medium text-ink-2 ring-1 ring-line">Demo merchant · accepts Solana Pay</p>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-ink md:text-4xl">Corner Store</h1>
+        <p className="mt-2 text-body text-ink-2">A shop that has never heard of Anuma. It issues a standard Solana Pay invoice and confirms payment by its reference key.</p>
       </header>
 
       {mintError && (
@@ -129,12 +127,12 @@ export function MerchantApp() {
               return (
                 <label
                   key={item.id}
-                  className={`flex cursor-pointer items-center gap-4 rounded-control border p-4 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary ${
-                    checked ? "border-primary bg-primary-soft" : "border-line hover:bg-surface"
+                  className={`flex cursor-pointer items-center gap-4 rounded-2xl bg-bg p-4 transition-shadow duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary ${
+                    checked ? "ring-2 ring-ink" : "ring-1 ring-line hover:ring-line-strong"
                   }`}
                 >
                   <input type="radio" name="item" value={item.id} checked={checked} onChange={() => setSelected(item.id)} className="sr-only" />
-                  <span className={`flex size-10 shrink-0 items-center justify-center rounded-control ${checked ? "bg-primary text-on-primary" : "bg-surface-2 text-ink-2"}`}>
+                  <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${checked ? "bg-primary text-on-primary" : "bg-surface-2 text-ink-2"}`}>
                     <Icon aria-hidden className="size-4" />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -156,7 +154,7 @@ export function MerchantApp() {
           </div>
         </Panel>
 
-        <section aria-labelledby="invoice-title" aria-live="polite" className="rounded-panel border border-line bg-bg p-5">
+        <section aria-labelledby="invoice-title" aria-live="polite" className="rounded-panel bg-bg p-6 shadow-[var(--shadow-raise)] ring-1 ring-line">
           <h2 id="invoice-title" className="text-body font-semibold text-ink">
             Invoice
           </h2>
@@ -165,7 +163,7 @@ export function MerchantApp() {
           ) : status.state === "paid" ? (
             <div className="mt-4 flex animate-fade-up flex-col items-start gap-3">
               <CircleCheck aria-hidden className="size-10 text-primary" />
-              <p className="text-title font-semibold text-ink">
+              <p className="text-2xl font-semibold tracking-tight text-ink">
                 Paid {formatUsdc(invoice.item.amount)} <span className="text-body font-normal text-muted">mUSDC</span>
               </p>
               <p className="text-small text-ink-2">
@@ -181,11 +179,11 @@ export function MerchantApp() {
               <div className="flex items-baseline justify-between gap-3">
                 <p className="font-medium text-ink">{invoice.item.name}</p>
                 <p>
-                  <span className="text-title font-semibold tabular text-ink">{formatUsdc(invoice.item.amount)}</span>
+                  <span className="text-2xl font-semibold tracking-tight tabular text-ink">{formatUsdc(invoice.item.amount)}</span>
                   <span className="ml-1 text-small text-muted">mUSDC</span>
                 </p>
               </div>
-              <div className="mx-auto w-full max-w-60 rounded-control border border-line bg-bg p-4">
+              <div className="mx-auto w-full max-w-60 rounded-2xl bg-bg p-4 ring-1 ring-line">
                 {qr?.url === invoice.url ? (
                   <div role="img" aria-label="Solana Pay QR code" className="[&>svg]:h-auto [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qr.svg }} />
                 ) : (
