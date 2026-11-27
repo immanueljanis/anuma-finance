@@ -10,14 +10,14 @@ const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] }
 
 const REPO = "https://github.com/immanueljanis/anuma-finance";
 
-/** Two-tone heading that echoes the hero: a gray first line and a dark second line pulled up over it, revealed word by word. */
+/** Section heading in the hero's voice: a dark claim followed by a gray second sentence, revealed word by word. */
 function Heading({ light, dark, center = false }: { light: string; dark: string; center?: boolean }) {
   return (
-    <h2 data-reveal="words" className={center ? "text-center" : undefined}>
-      <span className="block text-4xl leading-none font-normal tracking-tighter text-gray-500 md:text-5xl">
-        <Words text={light} />
-      </span>
-      <span className="-mt-1 block text-4xl leading-none font-normal tracking-tighter text-[#202A36] md:text-5xl">
+    <h2
+      data-reveal="words"
+      className={`max-w-3xl text-3xl leading-tight font-semibold tracking-tight text-gray-950 md:text-5xl md:leading-[1.08] ${center ? "mx-auto text-center" : ""}`}
+    >
+      <Words text={light} /> <span className="text-gray-400">
         <Words text={dark} />
       </span>
     </h2>
@@ -52,7 +52,7 @@ function HowItWorks() {
           return (
             <li key={step.title} data-tilt className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-200 transition-shadow hover:shadow-md">
               <div className="flex items-center justify-between">
-                <span className="flex size-9 items-center justify-center rounded-full bg-[#202A36] text-sm font-semibold text-white">{i + 1}</span>
+                <span className="flex size-9 items-center justify-center rounded-full bg-gray-950 text-sm font-semibold text-white">{i + 1}</span>
                 <Icon aria-hidden className="size-5 text-gray-500" />
               </div>
               <h3 className="mt-6 font-semibold text-gray-900">{step.title}</h3>
@@ -97,7 +97,7 @@ function Privacy() {
               key={column.title}
               data-reveal={column.reveal}
               data-tilt
-              className={`rounded-3xl p-8 ${column.dark ? "bg-[#202A36] text-white" : "bg-gray-50 ring-1 ring-gray-200"}`}
+              className={`rounded-3xl p-8 ${column.dark ? "bg-gray-950 text-white" : "bg-gray-50 ring-1 ring-gray-200"}`}
             >
               <h3 className={`flex items-center gap-2 font-semibold ${column.dark ? "text-white" : "text-gray-900"}`}>
                 <Icon aria-hidden className="size-5" />
@@ -139,7 +139,7 @@ function Why() {
               </th>
               <th scope="col" className="px-6 py-5 font-medium">Collateral lending</th>
               <th scope="col" className="px-6 py-5 font-medium">Identity-linked credit</th>
-              <th scope="col" className="bg-[#202A36] px-6 py-5 font-semibold text-white">Anuma</th>
+              <th scope="col" className="bg-gray-950 px-6 py-5 font-semibold text-white">Anuma</th>
             </tr>
           </thead>
           <tbody data-reveal="stagger">
@@ -191,7 +191,7 @@ function OneLine() {
                   </div>
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
-                      row.ok ? "bg-[#202A36] text-white" : "bg-gray-300 text-gray-800"
+                      row.ok ? "bg-gray-950 text-white" : "bg-gray-300 text-gray-800"
                     }`}
                   >
                     {row.ok ? <Check aria-hidden className="size-3.5" /> : <X aria-hidden className="size-3.5" />}
@@ -223,7 +223,7 @@ function SolanaPay() {
                 Paid 18.00 <span className="text-base font-normal text-gray-500">mUSDC</span>
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#202A36] px-3 py-1 text-xs font-medium text-white">
+            <span className="inline-flex items-center gap-1 rounded-full bg-gray-950 px-3 py-1 text-xs font-medium text-white">
               <Check aria-hidden className="size-3.5" />
               Found by reference
             </span>
@@ -257,7 +257,7 @@ function UnderTheHood() {
           <div key={fact.term} data-tilt className="rounded-3xl bg-gray-50 p-6 ring-1 ring-gray-200">
             <dt className="text-sm font-semibold text-gray-500">{fact.term}</dt>
             <dd className="mt-3">
-              <span className="text-4xl font-normal tracking-tighter text-[#202A36] tabular-nums">
+              <span className="text-4xl font-semibold tracking-tight text-gray-950 tabular-nums">
                 <span data-count={fact.figure} data-dec={fact.decimals ?? 0}>
                   {fact.figure.toLocaleString("en-US", { minimumFractionDigits: fact.decimals ?? 0 })}
                 </span>
@@ -274,13 +274,10 @@ function UnderTheHood() {
 
 function Closing() {
   return (
-    <section className="overflow-x-clip bg-[#202A36]">
+    <section className="overflow-x-clip bg-gray-950">
       <div className="mx-auto flex w-full max-w-7xl flex-col items-center px-8 py-24 text-center md:py-32">
-        <h2 data-reveal="words">
-          <span className="block text-4xl leading-none font-normal tracking-tighter text-gray-400 md:text-6xl">
-            <Words text="Your reputation." />
-          </span>
-          <span className="-mt-1 block text-4xl leading-none font-normal tracking-tighter text-white md:text-6xl">
+        <h2 data-reveal="words" className="max-w-3xl text-4xl leading-tight font-semibold tracking-tight text-white md:text-6xl md:leading-[1.05]">
+          <Words text="Your reputation." /> <span className="text-gray-400">
             <Words text="Not your identity." />
           </span>
         </h2>
@@ -288,7 +285,7 @@ function Closing() {
           Open a private credit line on Solana devnet in about a minute. Mock USDC, no real funds.
         </p>
         <div data-reveal="up" className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Link href="/app" className="rounded-full bg-white px-4 py-2 font-medium text-[#202A36] transition-colors hover:bg-gray-200">
+          <Link href="/app" className="rounded-full bg-white px-4 py-2 font-medium text-gray-950 transition-colors hover:bg-gray-200">
             Open the app
           </Link>
           <Link href="/pool" className="rounded-full bg-gray-300 px-4 py-2 font-medium text-gray-800 transition-colors hover:bg-gray-400">
@@ -321,7 +318,7 @@ function Footer() {
 export default function Landing() {
   return (
     <div className={`${inter.className} min-h-screen bg-gray-50`}>
-      <div id="scroll-progress" aria-hidden className="fixed inset-x-0 top-0 z-30 h-0.5 origin-left scale-x-0 bg-[#202A36]" />
+      <div id="scroll-progress" aria-hidden className="fixed inset-x-0 top-0 z-30 h-0.5 origin-left scale-x-0 bg-gray-950" />
       <LandingHero />
       <HowItWorks />
       <Privacy />
