@@ -112,6 +112,23 @@ NEXT_PUBLIC_SOLANA_RPC=http://127.0.0.1:8899 SOLANA_RPC_URL=http://127.0.0.1:889
 
 Bootstrap creates the mock USDC mint, initializes the program with the demo terms (2-minute loans, 30-second grace), funds the vault and registers seven demo members, so the first real user already hides among eight people.
 
+## Deploy to devnet
+
+1. Fund the Solana CLI default wallet with at least 2.7 devnet SOL (https://faucet.solana.com).
+2. Put the program keypair at `$HOME/anuma-target/deploy/anuma-keypair.json` (it keeps the program ID `9k1zFVAB…3nKd`).
+3. Run `scripts/deploy-devnet.sh`. It refuses to start when the wallet holds too little SOL, builds, deploys, tops up the server key and refreshes `apps/web/lib/anuma/idl.json`.
+4. Run `node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/bootstrap.mts` in `apps/web` with `.env.local` pointing at devnet.
+5. Host `apps/web` (Next.js) with the variables from `apps/web/.env.example`. `ANUMA_SERVER_SECRET`, `ANUMA_ISSUER_SECRET` and a keyed `SOLANA_RPC_URL` are server-only and must never get a `NEXT_PUBLIC_` prefix.
+
+## Try it
+
+1. Open `/app`, connect a wallet (Phantom, Solflare, Backpack, or the in-browser burner wallet for a quick look).
+2. Sign once to create your private identity, then verify with any 6 to 20 character ID number.
+3. Generate the proof and open your line: about a second in the browser, no SOL needed.
+4. Open `/merchant` in another tab, create an invoice, paste its link on `/app` and pay. The store tab turns to Paid.
+5. Get test mUSDC on the pseudonym, repay, and watch the limit grow to 37.50.
+6. Try a second line from a new wallet: the program refuses it. Let a loan pass its due time and grace to see a permanent default.
+
 ## Honest limits of this demo
 
 - **Demo issuer.** Any ID number of 6 to 20 letters or digits passes. A production issuer would verify the document with a licensed identity provider before co-signing, and key the person by issuing country, document type and number.
