@@ -154,11 +154,11 @@ export function useCredit() {
     writeLocal(identityKey(walletAddress), identityFromSignature(signature).export());
   };
 
-  const register = async (nik: string) => {
+  const register = async (idNumber: string) => {
     if (!publicKey || !signTransaction || !currentIdentity) throw new Error("Connect a wallet and create your identity first");
     const { tx } = await postJson<{ tx: string }>("/api/register", {
       wallet: publicKey.toBase58(),
-      nik,
+      idNumber,
       commitment: currentIdentity.commitment.toString(),
     });
     const signed = await signTransaction(Transaction.from(decodeBase64(tx)));

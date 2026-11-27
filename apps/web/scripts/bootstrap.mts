@@ -60,8 +60,7 @@ const { Keypair } = await import("@solana/web3.js");
 const { be32 } = await import("../lib/zk/encoding.ts");
 let seeded = 0;
 for (let i = 1; i <= DEMO_MEMBERS; i++) {
-  const nik = `99990000000000${String(i).padStart(2, "0")}`;
-  const personId = server.personIdFor(nik);
+  const personId = server.personIdFor(`DEMO${String(i).padStart(6, "0")}`);
   if (await conn.getAccountInfo(program.personPda(personId))) continue;
   const kycWallet = Keypair.generate();
   const commitment = be32(new Identity(`anuma-demo-member-${i}`).commitment);

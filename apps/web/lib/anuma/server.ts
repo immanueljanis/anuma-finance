@@ -38,21 +38,24 @@ export function rpc(): Connection {
   return new Connection(RPC_URL, "confirmed");
 }
 
-/** Indonesian national ID (NIK): exactly 16 digits after removing spaces. */
-export function normalizeNik(input: string): string | null {
-  const nik = input.replace(/\s+/g, "");
-  return /^\d{16}$/.test(nik) ? nik : null;
+/**
+ * A government ID number (passport, national ID card, driver's licence) as the demo issuer accepts
+ * it: 6 to 20 letters or digits once spaces and dashes are removed, compared case-insensitively.
+ */
+export function normalizeIdNumber(input: string): string | null {
+  const id = input.replace(/[\s-]+/g, "").toUpperCase();
+  return /^[A-Z0-9]{6,20}$/.test(id) ? id : null;
 }
 
 /**
- * The on-chain person key: HMAC-SHA256(issuer secret, NIK). The chain sees only this value, so the
- * NIK stays with the issuer, and the same NIK always maps to the same Person PDA, which blocks a
- * second registration.
+ * The on-chain person key: HMAC-SHA256(issuer secret, ID number). The chain sees only this value,
+ * so the number stays with the issuer, and the same ID always maps to the same Person PDA, which
+ * blocks a second registration.
  */
-export function personIdFor(nik: string): Uint8Array {
+export function personIdFor(idNumber: string): Uint8Array {
   const secret = process.env.ANUMA_ISSUER_SECRET;
   if (!secret || secret.length < 32) throw new Error("ANUMA_ISSUER_SECRET is not set or shorter than 32 chars");
-  return hmac(sha256, new TextEncoder().encode(secret), new TextEncoder().encode(nik));
+  return hmac(sha256, new TextEncoder().encode(secret), new TextEncoder().encode(idNumber));
 }
 
 export async function fetchConfig(conn: Connection): Promise<ConfigAccount | null> {

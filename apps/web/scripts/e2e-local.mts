@@ -83,7 +83,7 @@ async function relay(tx: Transaction, signers: Signer[]) {
   return server.relayTransaction(conn, Transaction.from(tx.serialize({ requireAllSignatures: false })));
 }
 
-type Member = { identity: Identity; wallet: Keypair; nik: string };
+type Member = { identity: Identity; wallet: Keypair; idNumber: string };
 
 async function openCredit(member: Member, pseudonym: Keypair, proofFor: PublicKey = pseudonym.publicKey) {
   const commitments = await server.fetchCommitments(conn);
@@ -131,7 +131,7 @@ ok("initialize creates config and vault");
 const members: Member[] = [1, 2, 3].map((i) => ({
   identity: new Identity(`anuma-e2e-member-${i}`),
   wallet: Keypair.generate(),
-  nik: `317401234567000${i}`,
+  idNumber: `E2E00000${i}`,
 }));
 
 const registerTx = (m: Member) =>
@@ -139,7 +139,7 @@ const registerTx = (m: Member) =>
     program.registerIx({
       issuer: admin.publicKey,
       kycWallet: m.wallet.publicKey,
-      personId: server.personIdFor(m.nik),
+      personId: server.personIdFor(m.idNumber),
       commitment: be32(m.identity.commitment),
     }),
   );
@@ -149,8 +149,8 @@ const onChain = await server.fetchCommitments(conn);
 assert.deepEqual(onChain, members.map((m) => m.identity.commitment));
 ok("register stores 3 commitments in registration order");
 
-const twin: Member = { identity: new Identity("anuma-e2e-twin"), wallet: Keypair.generate(), nik: members[0].nik };
-await expectFailure("same NIK cannot register twice", ALREADY_EXISTS, () =>
+const twin: Member = { identity: new Identity("anuma-e2e-twin"), wallet: Keypair.generate(), idNumber: members[0].idNumber };
+await expectFailure("the same ID number cannot register twice", ALREADY_EXISTS, () =>
   sendAndConfirmTransaction(conn, registerTx(twin), [admin, twin.wallet]),
 );
 assert.deepEqual(await server.fetchCommitments(conn), members.map((m) => m.identity.commitment));
@@ -214,7 +214,7 @@ const borrow = (amount: bigint, references: PublicKey[] = []) =>
 await expectFailure("borrow above the limit", /OverLimit/, () => borrow(START + 1n));
 const reference = Keypair.generate().publicKey;
 const invoice = encodeTransferRequest(
-  { recipient: merchant.publicKey, amount: 20n * USDC, splToken: mint, references: [reference], label: "Warung Anuma", message: "Side-event ticket" },
+  { recipient: merchant.publicKey, amount: 20n * USDC, splToken: mint, references: [reference], label: "Corner Store", message: "Side-event ticket" },
   6,
 );
 const request = parseTransferRequest(invoice, 6);

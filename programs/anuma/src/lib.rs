@@ -65,7 +65,7 @@ pub mod anuma {
     }
 
     /// Adds one KYC-verified person to the group. The Person PDA is seeded by
-    /// `person_id = HMAC(issuer_secret, national_id)`, so `init` rejects a second registration of
+    /// `person_id = HMAC(issuer_secret, government_id_number)`, so `init` rejects a second registration of
     /// the same person. Only the issuer can co-sign, so only verified people get a leaf.
     pub fn register(ctx: Context<Register>, person_id: [u8; 32], commitment: [u8; 32]) -> Result<()> {
         let config = &mut ctx.accounts.config;

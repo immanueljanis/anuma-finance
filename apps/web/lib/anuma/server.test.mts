@@ -5,7 +5,7 @@ import { Identity } from "@semaphore-protocol/identity";
 import { ComputeBudgetProgram, Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { fromBe32 } from "../zk/encoding.ts";
 import { borrowIx, depositIx, markDefaultIx, openCreditIx, repayIx } from "./program.ts";
-import { checkRelayable, groupRoot, normalizeNik, personIdFor } from "./server.ts";
+import { checkRelayable, groupRoot, normalizeIdNumber, personIdFor } from "./server.ts";
 
 const server = Keypair.generate().publicKey;
 const pseudonym = Keypair.generate().publicKey;
@@ -60,12 +60,14 @@ test("server root equals the root of the Rust-verified spike proof", () => {
   assert.equal(fromBe32(groupRoot(commitments)).toString(), fixture.root);
 });
 
-test("NIK must be 16 digits and maps to a stable 32-byte person id", () => {
+test("ID numbers normalize to 6-20 letters or digits and map to a stable 32-byte person id", () => {
   process.env.ANUMA_ISSUER_SECRET = "test-secret-test-secret-test-secret-00";
-  assert.equal(normalizeNik("3174 0123 4567 0001"), "3174012345670001");
-  assert.equal(normalizeNik("12345"), null);
-  const a = personIdFor("3174012345670001");
+  assert.equal(normalizeIdNumber("p12 345-678"), "P12345678");
+  assert.equal(normalizeIdNumber("X1234"), null);
+  assert.equal(normalizeIdNumber("ABCDEFGHIJ12345678901"), null);
+  assert.equal(normalizeIdNumber("AB#12345"), null);
+  const a = personIdFor("P12345678");
   assert.equal(a.length, 32);
-  assert.deepEqual(personIdFor("3174012345670001"), a);
-  assert.notDeepEqual(personIdFor("3174012345670002"), a);
+  assert.deepEqual(personIdFor("P12345678"), a);
+  assert.notDeepEqual(personIdFor("P12345679"), a);
 });
