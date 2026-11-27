@@ -10,9 +10,10 @@ const NAVY = 0x202a36;
 
 /**
  * The landing hero's 3D scene: a dark Anuma card (the credit line) behind drifting frosted-glass
- * panes (the privacy), orbited by hundreds of pearl spheres (the verified people it hides among),
- * with a thin ring pulsing out when a proof is checked. three.js loads after first paint; without
- * WebGL the CSS gradient behind the canvas stays.
+ * pane (the privacy), orbited by pearl spheres (the verified people it hides among). three.js loads
+ * after first paint; without WebGL the CSS gradient behind the canvas stays. Kept cheap on purpose:
+ * the frosted pane is a translucent grain texture instead of real transmission (which re-renders the
+ * scene every frame), standard-material spheres, pixel ratio capped at 1.25, at most ~60 frames a second.
  */
 export function HeroScene({ className }: { className?: string }) {
   const host = useRef<HTMLDivElement>(null);
@@ -73,6 +74,28 @@ function cardFace(THREE: Three): InstanceType<Three["CanvasTexture"]> {
   return texture;
 }
 
+function frost(THREE: Three): InstanceType<Three["CanvasTexture"]> {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const g = canvas.getContext("2d")!;
+  const image = g.createImageData(256, 256);
+  for (let i = 0; i < image.data.length; i += 4) {
+    const v = 228 + Math.random() * 27;
+    image.data[i] = v;
+    image.data[i + 1] = v;
+    image.data[i + 2] = v + 2;
+    image.data[i + 3] = 255;
+  }
+  g.putImageData(image, 0, 0);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(3, 4);
+  return texture;
+}
+
 function backdrop(THREE: Three): InstanceType<Three["CanvasTexture"]> {
   const canvas = document.createElement("canvas");
   canvas.width = 4;
@@ -94,7 +117,7 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
   const compact = el.clientWidth < 700;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, el.clientWidth > 1500 ? 1 : 1.25));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -122,7 +145,7 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
   const disposables: { dispose(): void }[] = [sky, pmrem, renderer];
 
   const cardGroup = new THREE.Group();
-  cardGroup.scale.setScalar(1.15);
+  cardGroup.scale.setScalar(1.05);
   stage.add(cardGroup);
   const cardGeo = new RoundedBoxGeometry(3.37, 2.125, 0.07, 6, 0.13);
   const cardMat = new THREE.MeshPhysicalMaterial({ color: NAVY, metalness: 0.45, roughness: 0.34, clearcoat: 1, clearcoatRoughness: 0.16 });
@@ -141,29 +164,30 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
   disposables.push(cardGeo, cardMat, face, faceGeo, faceMat, chipGeo, chipMat);
 
   const glassGeo = new RoundedBoxGeometry(1.7, 2.6, 0.14, 6, 0.12);
+  const grain = frost(THREE);
   const glassMat = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
-    transmission: 1,
-    roughness: 0.3,
-    thickness: 0.45,
-    ior: 1.42,
+    map: grain,
+    roughness: 0.5,
     metalness: 0,
-    clearcoat: 0.5,
-    clearcoatRoughness: 0.22,
+    clearcoat: 0.7,
+    clearcoatRoughness: 0.28,
+    transparent: true,
+    opacity: 0.8,
+    depthWrite: false,
   });
   const panes = [
-    { mesh: new THREE.Mesh(glassGeo, glassMat), x: 1.05, y: 0.02, z: 0.8, ry: -0.34, speed: 0.15, scale: 1 },
-    { mesh: new THREE.Mesh(glassGeo, glassMat), x: -2.05, y: 0.28, z: -0.7, ry: 0.42, speed: 0.12, scale: 0.72 },
+    { mesh: new THREE.Mesh(glassGeo, glassMat), x: 1.0, y: 0.02, z: 0.8, ry: -0.34, speed: 0.15, scale: 0.95 },
   ];
   for (const pane of panes) {
     pane.mesh.scale.setScalar(pane.scale);
     stage.add(pane.mesh);
   }
-  disposables.push(glassGeo, glassMat);
+  disposables.push(glassGeo, glassMat, grain);
 
-  const count = compact ? 150 : 280;
-  const dotGeo = new THREE.SphereGeometry(1, 20, 14);
-  const dotMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.12 });
+  const count = compact ? 90 : 160;
+  const dotGeo = new THREE.SphereGeometry(1, 12, 8);
+  const dotMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.28, metalness: 0 });
   const dots = new THREE.InstancedMesh(dotGeo, dotMat, count);
   const pearl = new THREE.Color(0xf4f5f7);
   const mist = new THREE.Color(0xd5dae1);
@@ -184,12 +208,6 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
   stage.add(dots);
   disposables.push(dotGeo, dotMat);
 
-  const ringGeo = new THREE.TorusGeometry(1, 0.006, 6, 160);
-  const ringMat = new THREE.MeshBasicMaterial({ color: NAVY, transparent: true, opacity: 0, depthWrite: false });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
-  ring.rotation.x = Math.PI / 2;
-  stage.add(ring);
-  disposables.push(ringGeo, ringMat);
 
   const dummy = new THREE.Object3D();
   let pointerX = 0;
@@ -206,7 +224,7 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
     camera.updateProjectionMatrix();
     const portrait = camera.aspect < 1;
     stage.scale.setScalar(portrait ? Math.max(0.55, camera.aspect * 1.4) : 1);
-    stage.position.y = portrait ? -3.05 : -2.95;
+    stage.position.y = portrait ? -2.95 : -2.45;
   };
 
   const draw = (t: number) => {
@@ -228,17 +246,15 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
 
     people.forEach((p, i) => {
       const a = p.angle + t * p.speed;
-      dummy.position.set(Math.cos(a) * p.radius, p.height + Math.sin(t * 0.6 + p.bob) * 0.05, Math.sin(a) * p.radius * 0.55 - 1.5);
-      dummy.scale.setScalar(p.size);
+      const x = Math.cos(a) * p.radius;
+      const z = Math.sin(a) * p.radius * 0.55 - 1.5;
+      const y = p.height + Math.sin(t * 0.6 + p.bob) * 0.05;
+      dummy.position.set(x, y, z);
+      dummy.scale.setScalar(z > -0.3 && Math.abs(x) < 2.3 && Math.abs(y) < 1.4 ? 0 : p.size);
       dummy.updateMatrix();
       dots.setMatrixAt(i, dummy.matrix);
     });
     dots.instanceMatrix.needsUpdate = true;
-
-    const cycle = (t % 4.8) / 3.6;
-    const k = Math.min(1, cycle);
-    ring.scale.setScalar(1.7 + k * 5.6);
-    ringMat.opacity = cycle <= 1 ? 0.28 * (1 - k) : 0;
 
     renderer.render(scene, camera);
   };
@@ -252,10 +268,11 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
   let t = reduce ? 2 : 0;
 
   const frame = (now: number) => {
+    raf = requestAnimationFrame(frame);
+    if (now - last < 15) return;
     t += Math.min(0.05, (now - last) / 1000);
     last = now;
     draw(t);
-    raf = requestAnimationFrame(frame);
   };
   const sync = () => {
     const want = !reduce && visible && !document.hidden;

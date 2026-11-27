@@ -6,7 +6,7 @@ const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 type Kind = "up" | "left" | "right" | "words" | "stagger";
-type Target = { el: HTMLElement; kind: Kind; top: number; parts: HTMLElement[] };
+type Target = { el: HTMLElement; kind: Kind; top: number; parts: HTMLElement[]; last: number };
 
 /**
  * Scroll choreography for the landing page, in the spirit of the Noctis story: one rAF loop reads a
@@ -22,7 +22,7 @@ export function LandingMotion() {
     const targets: Target[] = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]")).map((el) => {
       const kind = el.dataset.reveal as Kind;
       const parts = kind === "words" ? Array.from(el.querySelectorAll<HTMLElement>(".w")) : kind === "stagger" ? (Array.from(el.children) as HTMLElement[]) : [];
-      return { el, kind, top: 0, parts };
+      return { el, kind, top: 0, parts, last: -1 };
     });
     const hero = document.getElementById("hero-copy");
     const bar = document.getElementById("scroll-progress");
@@ -73,10 +73,13 @@ export function LandingMotion() {
     }
 
     let vy = window.scrollY;
+    let drawnAt = Number.NaN;
     let last = performance.now();
     let raf = 0;
 
     const apply = (t: Target, p: number) => {
+      if (Math.abs(p - t.last) < 0.002) return;
+      t.last = p;
       const s = t.el.style;
       if (t.kind === "words") {
         const n = t.parts.length;
@@ -93,7 +96,6 @@ export function LandingMotion() {
           const k = ease(clamp(p * 1.6 - i * 0.14));
           c.style.opacity = String(k);
           c.style.transform = `translate3d(0, ${(1 - k) * 36}px, 0) var(--tilt, )`;
-          c.style.filter = k < 1 ? `blur(${(1 - k) * 8}px)` : "";
         });
         return;
       }
@@ -102,7 +104,6 @@ export function LandingMotion() {
       const dy = t.kind === "up" ? (1 - k) * 40 : 0;
       s.opacity = String(k);
       s.transform = `translate3d(${dx}px, ${dy}px, 0) var(--tilt, )`;
-      s.filter = k < 1 ? `blur(${(1 - k) * 10}px)` : "";
     };
 
     const frame = (now: number) => {
@@ -111,6 +112,9 @@ export function LandingMotion() {
       const y = window.scrollY;
       vy += (y - vy) * (1 - Math.pow(0.84, dt / 16.7));
       if (Math.abs(y - vy) < 0.1) vy = y;
+      raf = requestAnimationFrame(frame);
+      if (vy === drawnAt) return;
+      drawnAt = vy;
       const h = H();
 
       const maxScroll = document.documentElement.scrollHeight - h;
@@ -124,7 +128,7 @@ export function LandingMotion() {
         const k = clamp(vy / (h * 0.55));
         hero.style.opacity = String(1 - k);
         hero.style.transform = `translate3d(0, ${-k * 90}px, 0) scale(${1 + k * 0.1})`;
-        hero.style.filter = k > 0 ? `blur(${k * 12}px)` : "";
+        hero.style.filter = k > 0 && k < 1 ? `blur(${k * 8}px)` : "";
       }
       if (bar) {
         const max = document.documentElement.scrollHeight - h;
@@ -136,11 +140,13 @@ export function LandingMotion() {
           countUp(c.el);
         }
       }
-      raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
 
-    const remeasure = new ResizeObserver(measure);
+    const remeasure = new ResizeObserver(() => {
+      measure();
+      drawnAt = Number.NaN;
+    });
     remeasure.observe(document.body);
 
     return () => {
