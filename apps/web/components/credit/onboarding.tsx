@@ -56,8 +56,8 @@ export function Onboarding({ state }: { state: CreditState }) {
   const crowd = group?.commitments.length ?? 0;
 
   return (
-    <section aria-labelledby="setup-title" className="rounded-panel border border-line bg-bg p-6 sm:p-7">
-      <h2 id="setup-title" className="text-title font-semibold text-ink">
+    <section aria-labelledby="setup-title" className="rounded-panel bg-bg p-6 shadow-[var(--shadow-raise)] ring-1 ring-line sm:p-8">
+      <h2 id="setup-title" className="text-xl font-semibold tracking-tight text-ink">
         Open your private credit line
       </h2>
       <p className="mt-1 max-w-[60ch] text-small text-muted">Four steps, about a minute. Only step 3 asks for personal data, and only the issuer sees it.</p>
