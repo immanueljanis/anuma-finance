@@ -65,7 +65,7 @@ programs/anuma/          Anchor 1.x program
   src/lib.rs             initialize, register, set_root, open_credit, deposit, borrow, repay, mark_default
   src/vk.rs              Semaphore v4 depth-16 verifying key in groth16-solana layout (generated)
 apps/web/                Next.js 16 app
-  app/                   Credit (/), Pool (/pool), Merchant (/merchant), API routes
+  app/                   Landing (/), Credit (/app), Pool (/pool), Merchant (/merchant), API routes
   lib/zk/                proof encoding, identity, nullifier and pseudonym derivation, proving
   lib/anuma/             instruction builders, account decoders, issuer/root-sync/relayer logic
   lib/solana-pay.ts      transfer requests, reference lookup, transfer validation

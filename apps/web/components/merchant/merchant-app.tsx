@@ -207,7 +207,7 @@ export function MerchantApp() {
                   <LoaderCircle aria-hidden className="mt-0.5 size-4 shrink-0 animate-spin-slow text-muted" />
                   <span>
                     Waiting for payment. Paste the link on the{" "}
-                    <Link href="/" target="_blank" className="font-medium text-primary underline-offset-2 hover:underline">
+                    <Link href="/app" target="_blank" className="font-medium text-primary underline-offset-2 hover:underline">
                       Credit page
                     </Link>
                     .

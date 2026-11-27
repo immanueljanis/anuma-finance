@@ -1,12 +1,13 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CLUSTER } from "@/lib/anuma/browser";
 import { WalletButton } from "./wallet-button";
 
 const NAV = [
-  { href: "/", label: "Credit" },
+  { href: "/app", label: "Credit" },
   { href: "/pool", label: "Pool" },
   { href: "/merchant", label: "Merchant" },
 ];
@@ -26,6 +27,7 @@ const CLUSTER_LABEL = { devnet: "Devnet", localnet: "Localnet", mainnet: "Mainne
 
 export function TopBar() {
   const pathname = usePathname();
+  const landing = pathname === "/";
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur-sm">
       <div className="mx-auto flex w-full max-w-[72rem] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:h-16 sm:flex-nowrap sm:px-6 sm:py-0 lg:px-8">
@@ -35,7 +37,7 @@ export function TopBar() {
         </Link>
         <nav aria-label="Main" className="order-last -mx-3 flex w-[calc(100%+1.5rem)] items-center gap-1 sm:order-none sm:mx-0 sm:w-auto">
           {NAV.map((item) => {
-            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const active = pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
@@ -55,7 +57,17 @@ export function TopBar() {
             <span aria-hidden className="size-1.5 rounded-full bg-primary" />
             {CLUSTER_LABEL[CLUSTER]}
           </span>
-          <WalletButton />
+          {landing ? (
+            <Link
+              href="/app"
+              className="inline-flex h-10 items-center gap-2 rounded-control bg-primary px-4 text-small font-medium whitespace-nowrap text-on-primary transition-colors duration-150 hover:bg-primary-hover active:bg-primary-active"
+            >
+              Open the app
+              <ArrowRight aria-hidden className="size-4" />
+            </Link>
+          ) : (
+            <WalletButton />
+          )}
         </div>
       </div>
     </header>
