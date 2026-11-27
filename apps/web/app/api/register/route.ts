@@ -4,6 +4,9 @@ import { normalizeIdNumber, personIdFor, rpc, serverKeypair } from "@/lib/anuma/
 import { fail, jsonBody, messageOf, parsePubkey } from "@/lib/anuma/http";
 import { BN254_R, be32 } from "@/lib/zk/encoding";
 
+/** Devnet confirmations can take tens of seconds; hosting platforms read this limit from the build output. */
+export const maxDuration = 60;
+
 /**
  * Demo KYC issuer. It accepts any well-formed government ID number; a production issuer would first
  * verify the document with a licensed identity provider. It returns a `register` transaction that

@@ -15,6 +15,9 @@ const COOLDOWN_MS = 20_000;
 
 const lastDrip = new Map<string, number>();
 
+/** Devnet confirmations can take tens of seconds; hosting platforms read this limit from the build output. */
+export const maxDuration = 60;
+
 /**
  * Devnet faucet for the demo token. It creates the owner's token account when needed and mints 100
  * mock USDC. The server pays, so a fresh pseudonym key can receive funds to repay without SOL.

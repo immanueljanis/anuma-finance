@@ -2,6 +2,9 @@ import { Transaction } from "@solana/web3.js";
 import { RelayError, relayTransaction, rpc } from "@/lib/anuma/server";
 import { fail, jsonBody, messageOf } from "@/lib/anuma/http";
 
+/** Devnet confirmations can take tens of seconds; hosting platforms read this limit from the build output. */
+export const maxDuration = 60;
+
 /**
  * Fee relayer. Pseudonym keys hold no SOL, so the relayer pays every fee and the rent of new credit
  * lines. Every user shares this one fee payer, so fee funding links no pseudonym to a wallet.
