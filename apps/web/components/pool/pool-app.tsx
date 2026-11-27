@@ -8,7 +8,7 @@ import { Check, Coins, Gavel, Landmark, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchGroup, getJson, postJson, relay, relayWithWallet } from "@/lib/anuma/browser";
 import { depositIx, markDefaultIx } from "@/lib/anuma/program";
-import { useNow } from "@/lib/clock";
+import { useChainOffset, useNow } from "@/lib/clock";
 import { formatSeconds, formatUsdc } from "@/lib/format";
 import { parseUnits } from "@/lib/solana-pay";
 import { lineStatus, type LineStatus } from "../credit/line-status";
@@ -183,7 +183,9 @@ function MarkDefault({ line, onDone }: { line: PoolLine; onDone: () => void }) {
 export function PoolApp() {
   const { data, error, reload } = usePool();
   const lines = data?.lines ?? [];
-  const now = useNow(lines.some((l) => l.debt !== "0" && !l.defaulted));
+  const { connection } = useConnection();
+  const openLoans = lines.some((l) => l.debt !== "0" && !l.defaulted);
+  const now = useNow(openLoans) + useChainOffset(connection, openLoans);
   const grace = BigInt(data?.graceSecs ?? "0");
   const rows = lines
     .map((line) => ({ line, status: lineStatus({ debt: BigInt(line.debt), dueTs: BigInt(line.dueTs), defaulted: line.defaulted }, grace, now) }))

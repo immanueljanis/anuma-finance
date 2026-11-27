@@ -7,7 +7,7 @@ import { ComputeBudgetProgram, PublicKey, Transaction, type Keypair } from "@sol
 import { useEffect, useMemo, useState } from "react";
 import { fetchGroup, isExistingLine, postJson, relay, type GroupInfo } from "@/lib/anuma/browser";
 import { borrowIx, creditPda, decodeCredit, markDefaultIx, openCreditIx, repayIx, type CreditAccount } from "@/lib/anuma/program";
-import { useNow } from "@/lib/clock";
+import { useChainOffset, useNow } from "@/lib/clock";
 import { readLocal, useLocalValue, writeLocal } from "@/lib/local-store";
 import { parseTransferRequest, type TransferRequest } from "@/lib/solana-pay";
 import { USDC_DECIMALS } from "@/lib/format";
@@ -124,7 +124,9 @@ export function useCredit() {
   }, [connection, balanceKey, balanceVersion]);
   const pseudonymBalance = balanceState?.key === balanceKey ? balanceState.value : null;
 
-  const now = useNow(Boolean(credit && credit.debt > 0n));
+  const hasDebt = Boolean(credit && credit.debt > 0n);
+  const clockOffset = useChainOffset(connection, hasDebt);
+  const now = useNow(hasDebt) + clockOffset;
 
   const [proof, setProof] = useState<ProofProgress>(null);
   const [secondLineState, setSecondLineState] = useState<(SecondLineResult & { key: string }) | null>(null);
@@ -293,6 +295,7 @@ export function useCredit() {
     proof,
     secondLine,
     now,
+    clockOffset,
     actions: { refresh, createIdentity, register, openCredit, trySecondLine, parseInvoice, payInvoice, fundPseudonym, repay, markDefault },
   };
 }

@@ -208,7 +208,7 @@ export function LineActions({ state, status }: { state: CreditState; status: Lin
       <PayInvoice state={state} />
     </Panel>
   ) : (
-    <Panel title="Repay your loan" description={state.credit ? `Due at ${new Date(Number(state.credit.dueTs) * 1000).toLocaleTimeString("en-GB")}` : undefined}>
+    <Panel title="Repay your loan" description={state.credit ? `Due at ${new Date((Number(state.credit.dueTs) - state.clockOffset) * 1000).toLocaleTimeString("en-GB")}` : undefined}>
       <Repay state={state} status={status} />
     </Panel>
   );
