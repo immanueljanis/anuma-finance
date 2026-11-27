@@ -1,0 +1,12 @@
+{
+  "name": "anuma-finance",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint",
+    "test": "pnpm --filter web test",
+    "check": "pnpm --filter web lint && pnpm --filter web test && pnpm --filter web build"
+  },
+  "packageManager": "pnpm@11.3.0"
+}
