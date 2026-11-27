@@ -1,0 +1,1131 @@
+{
+  "address": "9k1zFVABWqqDQRJbfwQpucxWdbN7gJnTCbFFv5RL3nKd",
+  "metadata": {
+    "name": "anuma",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Anonymous, Sybil-resistant credit lines on Solana"
+  },
+  "instructions": [
+    {
+      "name": "borrow",
+      "docs": [
+        "Pays a merchant from the vault on behalf of the pseudonym (buy now, pay later). One open loan",
+        "at a time, up to the current limit."
+      ],
+      "discriminator": [
+        228,
+        253,
+        131,
+        202,
+        207,
+        116,
+        89,
+        18
+      ],
+      "accounts": [
+        {
+          "name": "pseudonym",
+          "signer": true,
+          "relations": [
+            "credit"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "credit",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  100,
+                  105,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "credit.nullifier",
+                "account": "Credit"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "merchant_token",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "deposit",
+      "docs": [
+        "Adds lender liquidity to the vault."
+      ],
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "lender",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "lender_token",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "docs": [
+        "Creates the config and the USDC vault. The admin also posts Merkle roots."
+      ],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "issuer",
+          "type": "pubkey"
+        },
+        {
+          "name": "start_limit",
+          "type": "u64"
+        },
+        {
+          "name": "max_unsecured_limit",
+          "type": "u64"
+        },
+        {
+          "name": "loan_term_secs",
+          "type": "i64"
+        },
+        {
+          "name": "grace_secs",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "mark_default",
+      "docs": [
+        "Marks an overdue line as defaulted. Anyone can call it after the due time plus grace. The",
+        "nullifier-seeded PDA keeps the flag, so the same person can never open a clean line again."
+      ],
+      "discriminator": [
+        182,
+        231,
+        123,
+        132,
+        66,
+        208,
+        137,
+        139
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "credit",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  100,
+                  105,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "credit.nullifier",
+                "account": "Credit"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "open_credit",
+      "docs": [
+        "Opens an anonymous credit line for a fresh pseudonym key. The Semaphore proof shows that the",
+        "caller owns one registered commitment without saying which one. The message is the pseudonym",
+        "public key, so a copied proof cannot open a line for another key. The Credit PDA is seeded by",
+        "the nullifier, so `init` rejects a second line for the same person."
+      ],
+      "discriminator": [
+        230,
+        209,
+        181,
+        155,
+        78,
+        201,
+        99,
+        216
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pseudonym",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "credit",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  100,
+                  105,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "nullifier"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "proof_a",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        },
+        {
+          "name": "proof_b",
+          "type": {
+            "array": [
+              "u8",
+              128
+            ]
+          }
+        },
+        {
+          "name": "proof_c",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        },
+        {
+          "name": "root",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "nullifier",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "register",
+      "docs": [
+        "Adds one KYC-verified person to the group. The Person PDA is seeded by",
+        "`person_id = HMAC(issuer_secret, national_id)`, so `init` rejects a second registration of",
+        "the same person. Only the issuer can co-sign, so only verified people get a leaf."
+      ],
+      "discriminator": [
+        211,
+        124,
+        67,
+        15,
+        211,
+        194,
+        178,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "issuer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "kyc_wallet",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "person",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  114,
+                  115,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "person_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "person_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "commitment",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "repay",
+      "docs": [
+        "Repays debt from any payer. A full repayment on time raises the limit by 50%, capped at the",
+        "maximum unsecured limit. A late repayment clears the debt but does not raise the limit, and a",
+        "defaulted line stays defaulted."
+      ],
+      "discriminator": [
+        234,
+        103,
+        67,
+        82,
+        208,
+        234,
+        219,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "credit",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  101,
+                  100,
+                  105,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "credit.nullifier",
+                "account": "Credit"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "payer_token",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_root",
+      "docs": [
+        "Stores the LeanIMT root of all commitments in registration order in the root ring buffer."
+      ],
+      "discriminator": [
+        183,
+        49,
+        10,
+        206,
+        168,
+        183,
+        131,
+        67
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "root",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "Credit",
+      "discriminator": [
+        6,
+        79,
+        161,
+        136,
+        156,
+        172,
+        190,
+        149
+      ]
+    },
+    {
+      "name": "Person",
+      "discriminator": [
+        16,
+        242,
+        44,
+        24,
+        121,
+        11,
+        0,
+        183
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "Borrowed",
+      "discriminator": [
+        225,
+        182,
+        241,
+        78,
+        34,
+        145,
+        253,
+        230
+      ]
+    },
+    {
+      "name": "CreditOpened",
+      "discriminator": [
+        210,
+        51,
+        122,
+        154,
+        254,
+        42,
+        109,
+        153
+      ]
+    },
+    {
+      "name": "DefaultMarked",
+      "discriminator": [
+        16,
+        102,
+        206,
+        133,
+        227,
+        138,
+        211,
+        138
+      ]
+    },
+    {
+      "name": "Registered",
+      "discriminator": [
+        11,
+        222,
+        10,
+        72,
+        160,
+        110,
+        165,
+        227
+      ]
+    },
+    {
+      "name": "Repaid",
+      "discriminator": [
+        38,
+        248,
+        231,
+        7,
+        150,
+        164,
+        172,
+        23
+      ]
+    },
+    {
+      "name": "RootSet",
+      "discriminator": [
+        244,
+        111,
+        125,
+        198,
+        147,
+        106,
+        193,
+        26
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "BadParams",
+      "msg": "Invalid initialize parameters"
+    },
+    {
+      "code": 6001,
+      "name": "NotIssuer",
+      "msg": "Signer is not the configured issuer"
+    },
+    {
+      "code": 6002,
+      "name": "UnknownRoot",
+      "msg": "Root is not in the recent root history"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidProof",
+      "msg": "Zero-knowledge proof is invalid"
+    },
+    {
+      "code": 6004,
+      "name": "Defaulted",
+      "msg": "Credit line is defaulted"
+    },
+    {
+      "code": 6005,
+      "name": "DebtOutstanding",
+      "msg": "Repay the open loan first"
+    },
+    {
+      "code": 6006,
+      "name": "OverLimit",
+      "msg": "Amount exceeds the credit limit"
+    },
+    {
+      "code": 6007,
+      "name": "ZeroAmount",
+      "msg": "Amount must be positive"
+    },
+    {
+      "code": 6008,
+      "name": "OverRepay",
+      "msg": "Amount exceeds the debt"
+    },
+    {
+      "code": 6009,
+      "name": "NoDebt",
+      "msg": "No open debt"
+    },
+    {
+      "code": 6010,
+      "name": "NotOverdue",
+      "msg": "Loan is not past due plus grace"
+    },
+    {
+      "code": 6011,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    }
+  ],
+  "types": [
+    {
+      "name": "Borrowed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "credit",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "due_ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "issuer",
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "roots",
+            "type": {
+              "array": [
+                {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                8
+              ]
+            }
+          },
+          {
+            "name": "root_idx",
+            "type": "u8"
+          },
+          {
+            "name": "member_count",
+            "type": "u32"
+          },
+          {
+            "name": "start_limit",
+            "type": "u64"
+          },
+          {
+            "name": "max_unsecured_limit",
+            "type": "u64"
+          },
+          {
+            "name": "loan_term_secs",
+            "type": "i64"
+          },
+          {
+            "name": "grace_secs",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Credit",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pseudonym",
+            "type": "pubkey"
+          },
+          {
+            "name": "nullifier",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "type": "u64"
+          },
+          {
+            "name": "debt",
+            "type": "u64"
+          },
+          {
+            "name": "due_ts",
+            "type": "i64"
+          },
+          {
+            "name": "repaid_count",
+            "type": "u16"
+          },
+          {
+            "name": "defaulted",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreditOpened",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "credit",
+            "type": "pubkey"
+          },
+          {
+            "name": "pseudonym",
+            "type": "pubkey"
+          },
+          {
+            "name": "nullifier",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DefaultMarked",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "credit",
+            "type": "pubkey"
+          },
+          {
+            "name": "debt",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Person",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "kyc_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "index",
+            "type": "u32"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Registered",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "person_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "commitment",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "index",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Repaid",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "credit",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "remaining",
+            "type": "u64"
+          },
+          {
+            "name": "new_limit",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RootSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "member_count",
+            "type": "u32"
+          }
+        ]
+      }
+    }
+  ]
+}
