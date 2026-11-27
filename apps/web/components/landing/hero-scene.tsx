@@ -13,7 +13,8 @@ const NAVY = 0x202a36;
  * pane (the privacy), orbited by pearl spheres (the verified people it hides among). three.js loads
  * after first paint; without WebGL the CSS gradient behind the canvas stays. Kept cheap on purpose:
  * the frosted pane is a translucent grain texture instead of real transmission (which re-renders the
- * scene every frame), standard-material spheres, pixel ratio capped at 1.25, at most ~60 frames a second.
+ * scene every frame), standard-material spheres, pixel ratio capped at 1.25, at most ~60 frames a second,
+ * MSAA only on standard-density screens, and the pixel ratio steps down (to 0.6) while frames run slow.
  */
 export function HeroScene({ className }: { className?: string }) {
   const host = useRef<HTMLDivElement>(null);
@@ -116,7 +117,7 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const compact = el.clientWidth < 700;
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  const renderer = new THREE.WebGLRenderer({ antialias: devicePixelRatio < 1.5, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, el.clientWidth > 1500 ? 1 : 1.25));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -267,12 +268,28 @@ function mount(el: HTMLDivElement, THREE: Three, RoundedBoxGeometry: RoundedBox,
   let last = performance.now();
   let t = reduce ? 2 : 0;
 
+  let pixelRatio = renderer.getPixelRatio();
+  let slowFrames = 0;
+  let sampled = 0;
+
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame);
-    if (now - last < 15) return;
-    t += Math.min(0.05, (now - last) / 1000);
+    const dt = now - last;
+    if (dt < 15) return;
+    t += Math.min(0.05, dt / 1000);
     last = now;
     draw(t);
+    sampled++;
+    if (dt > 28) slowFrames++;
+    if (sampled === 40) {
+      if (slowFrames > 20 && pixelRatio > 0.6) {
+        pixelRatio = Math.max(0.6, pixelRatio - 0.25);
+        renderer.setPixelRatio(pixelRatio);
+        layout();
+      }
+      sampled = 0;
+      slowFrames = 0;
+    }
   };
   const sync = () => {
     const want = !reduce && visible && !document.hidden;
