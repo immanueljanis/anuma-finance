@@ -3,6 +3,7 @@
 import { Menu, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Mark } from "../mark";
 import { HeroScene } from "./hero-scene";
 
 const NAV = [
@@ -18,16 +19,6 @@ const STATS = [
   { value: "1", label: "Line per person, ever" },
   { value: "0", label: "Identities on chain" },
 ];
-
-function Mark() {
-  return (
-    <svg viewBox="0 0 28 28" aria-hidden className="size-7">
-      <rect width="28" height="28" rx="8" fill="#0b1220" />
-      <circle cx="14" cy="14" r="7.25" fill="none" strokeWidth="1.75" stroke="#ffffff" />
-      <circle cx="16.75" cy="11.25" r="2.25" fill="#c7d2e0" />
-    </svg>
-  );
-}
 
 /** Anonymous avatars: the verified crowd, drawn without faces on purpose. */
 function Crowd() {

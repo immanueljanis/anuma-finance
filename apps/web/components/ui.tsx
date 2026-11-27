@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, ExternalLink, LoaderCircle, TriangleAlert, Info, CircleX } from "lucide-react";
+import { Check, CircleX, Copy, ExternalLink, Info, LoaderCircle, TriangleAlert } from "lucide-react";
 import { useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { explorerAddress, explorerTx } from "@/lib/anuma/browser";
 import { shortKey } from "@/lib/format";
@@ -10,17 +10,15 @@ const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boo
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary:
-    "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active disabled:bg-line-strong disabled:text-bg",
-  secondary:
-    "border border-line-strong bg-bg text-ink hover:bg-surface active:bg-surface-2 disabled:text-muted disabled:hover:bg-bg",
-  ghost: "text-ink-2 hover:bg-surface hover:text-ink active:bg-surface-2 disabled:text-muted",
-  danger: "border border-danger-line bg-danger-soft text-danger hover:border-danger active:bg-bg disabled:opacity-60",
+  primary: "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active disabled:bg-line-strong disabled:text-bg",
+  secondary: "bg-bg text-ink ring-1 ring-line-strong hover:bg-surface-2 active:bg-line disabled:text-muted disabled:hover:bg-bg",
+  ghost: "text-ink-2 hover:bg-surface-2 hover:text-ink active:bg-line disabled:text-muted",
+  danger: "bg-danger-soft text-danger ring-1 ring-danger-line hover:ring-danger active:bg-bg disabled:opacity-60",
 };
 
 /**
- * The one button of the app. `busy` keeps the width, swaps the icon for a spinner and shows
- * `busyLabel`, so the user always reads what is happening.
+ * The one button of the app, a pill like the landing page's. `busy` keeps the width, swaps the icon
+ * for a spinner and shows `busyLabel`, so the user always reads what is happening.
  */
 export function Button({
   variant = "primary",
@@ -46,10 +44,10 @@ export function Button({
       disabled={disabled || busy}
       aria-busy={busy || undefined}
       className={cx(
-        "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-control font-medium transition-colors duration-150 disabled:cursor-not-allowed",
-        size === "sm" && "h-8 px-3 text-small whitespace-nowrap",
-        size === "md" && "h-10 px-4 text-small",
-        size === "lg" && "min-h-12 px-5 py-2 text-body",
+        "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full font-medium transition-colors duration-150 disabled:cursor-not-allowed",
+        size === "sm" && "h-8 px-3.5 text-caption whitespace-nowrap",
+        size === "md" && "h-10 px-4.5 text-small",
+        size === "lg" && "min-h-11 px-5.5 py-2 text-small",
         VARIANTS[variant],
         className,
       )}
@@ -60,33 +58,43 @@ export function Button({
   );
 }
 
-export type Tone = "neutral" | "primary" | "warn" | "danger" | "info";
+export type Tone = "neutral" | "primary" | "positive" | "warn" | "danger" | "info";
 
-const TONES: Record<Tone, string> = {
-  neutral: "border-line bg-surface text-ink-2",
-  primary: "border-primary-line bg-primary-soft text-primary",
-  warn: "border-warn-line bg-warn-soft text-warn",
-  danger: "border-danger-line bg-danger-soft text-danger",
-  info: "border-info-line bg-info-soft text-info",
+const PILL_TONES: Record<Tone, string> = {
+  neutral: "bg-surface-2 text-ink-2",
+  primary: "bg-primary text-on-primary",
+  positive: "bg-positive-soft text-positive",
+  warn: "bg-warn-soft text-warn",
+  danger: "bg-danger-soft text-danger",
+  info: "bg-info-soft text-info",
 };
 
 /** A status label. The dot repeats the tone; the text carries the meaning. */
 export function Pill({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
   return (
-    <span className={cx("inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 text-caption font-medium whitespace-nowrap", TONES[tone])}>
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+    <span className={cx("inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-caption font-medium whitespace-nowrap", PILL_TONES[tone])}>
+      <span aria-hidden className="size-1.5 rounded-full bg-current opacity-80" />
       {children}
     </span>
   );
 }
 
-const NOTICE_ICON = { info: Info, warn: TriangleAlert, danger: CircleX, primary: Check, neutral: Info };
+const NOTICE_TONES: Record<Tone, string> = {
+  neutral: "bg-surface-2 text-ink-2",
+  primary: "bg-positive-soft text-positive",
+  positive: "bg-positive-soft text-positive",
+  warn: "bg-warn-soft text-warn",
+  danger: "bg-danger-soft text-danger",
+  info: "bg-info-soft text-info",
+};
+
+const NOTICE_ICON = { info: Info, warn: TriangleAlert, danger: CircleX, primary: Check, positive: Check, neutral: Info };
 
 /** An inline message inside the flow, never a modal. */
 export function Notice({ tone = "info", title, children }: { tone?: Tone; title?: string; children: ReactNode }) {
   const Icon = NOTICE_ICON[tone];
   return (
-    <div role={tone === "danger" ? "alert" : "status"} className={cx("flex gap-3 rounded-control border px-4 py-3 text-small", TONES[tone])}>
+    <div role={tone === "danger" ? "alert" : "status"} className={cx("flex gap-3 rounded-2xl px-4 py-3.5 text-small", NOTICE_TONES[tone])}>
       <Icon aria-hidden className="mt-0.5 size-4 shrink-0" />
       <div className="min-w-0 text-ink-2">
         {title && <p className="font-medium text-ink">{title}</p>}
@@ -107,7 +115,7 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="inline-flex size-7 cursor-pointer items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
+      className="inline-flex size-7 cursor-pointer items-center justify-center rounded-full text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
       aria-label={copied ? "Copied" : label}
       title={copied ? "Copied" : label}
     >
@@ -129,7 +137,7 @@ export function Address({ value, kind = "address", head = 6, tail = 4 }: { value
         href={href}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex size-7 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
+        className="inline-flex size-7 items-center justify-center rounded-full text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
         aria-label={`Open ${kind === "tx" ? "transaction" : "address"} in Solana Explorer`}
         title="Open in Solana Explorer"
       >
@@ -139,7 +147,7 @@ export function Address({ value, kind = "address", head = 6, tail = 4 }: { value
   );
 }
 
-/** A bordered region of the page with an optional heading row. */
+/** A white region of the page with an optional heading row. */
 export function Panel({
   title,
   description,
@@ -154,17 +162,17 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={cx("rounded-panel border border-line bg-bg", className)}>
+    <section className={cx("rounded-panel bg-bg shadow-[var(--shadow-raise)] ring-1 ring-line", className)}>
       {title && (
-        <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+        <header className="flex items-start justify-between gap-4 px-6 pt-6">
           <div className="min-w-0">
-            <h2 className="text-body font-semibold text-ink">{title}</h2>
+            <h2 className="text-body font-semibold tracking-tight text-ink">{title}</h2>
             {description && <p className="mt-0.5 text-small text-muted">{description}</p>}
           </div>
           {action}
         </header>
       )}
-      <div className="px-5 py-5">{children}</div>
+      <div className={title ? "px-6 pt-5 pb-6" : "p-6"}>{children}</div>
     </section>
   );
 }
@@ -193,7 +201,7 @@ export function Field({ id, label, hint, error, children }: { id: string; label:
 }
 
 export const inputClass =
-  "h-11 w-full rounded-control border border-line-strong bg-bg px-3.5 text-body text-ink placeholder:text-muted transition-colors duration-150 hover:border-ink-2/50 focus:border-primary focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary aria-[invalid=true]:border-danger disabled:bg-surface disabled:text-muted";
+  "h-11 w-full rounded-control bg-bg px-3.5 text-body text-ink ring-1 ring-line-strong placeholder:text-muted transition-shadow duration-150 hover:ring-ink-2/40 focus:ring-2 focus:ring-primary focus:outline-none aria-[invalid=true]:ring-danger disabled:bg-surface disabled:text-muted";
 
 /** A short skeleton bar for loading values. */
 export function Skeleton({ className }: { className?: string }) {

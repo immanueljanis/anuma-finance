@@ -31,7 +31,7 @@ export function WalletButton() {
       <button
         type="button"
         popoverTarget="wallet-menu"
-        className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-control whitespace-nowrap border border-line-strong bg-bg px-3 text-small font-medium text-ink transition-colors duration-150 [anchor-name:--wallet] hover:bg-surface"
+        className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-bg px-3.5 text-small font-medium whitespace-nowrap text-ink ring-1 ring-line-strong transition-colors duration-150 [anchor-name:--wallet] hover:bg-surface-2"
       >
         {wallet?.adapter.icon && <Image src={wallet.adapter.icon} alt="" width={16} height={16} unoptimized className="size-4" />}
         <span className="font-mono tabular">{shortKey(address, 4, 4)}</span>
@@ -40,7 +40,7 @@ export function WalletButton() {
         id="wallet-menu"
         ref={popover}
         popover="auto"
-        className="wallet-menu w-72 rounded-panel border border-line bg-bg p-2 text-small shadow-[var(--shadow-raise)]"
+        className="wallet-menu w-72 rounded-2xl bg-bg p-2 text-small shadow-[var(--shadow-raise)] ring-1 ring-line"
       >
         <div className="px-3 py-2">
           <p className="text-caption text-muted">{wallet?.adapter.name ?? "Wallet"}</p>
@@ -60,7 +60,7 @@ export function WalletButton() {
             popover.current?.hidePopover();
             void disconnect();
           }}
-          className="flex w-full cursor-pointer items-center gap-2 rounded-control px-3 py-2 text-left font-medium text-ink-2 transition-colors duration-150 hover:bg-surface hover:text-ink"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-ink-2 transition-colors duration-150 hover:bg-surface-2 hover:text-ink"
         >
           <LogOut aria-hidden className="size-4" />
           Disconnect
