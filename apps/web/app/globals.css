@@ -82,6 +82,7 @@
 @theme inline {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+  --font-display: var(--font-bodoni), "Bodoni 72", Didot, serif;
 }
 
 @layer base {
@@ -122,6 +123,34 @@
 
 @utility tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Landing rosette: fades and settles in once on load; reduced motion shows it at once. */
+.guilloche-reveal {
+  animation: guilloche-reveal 1400ms var(--ease-out-quint) both;
+}
+
+@keyframes guilloche-reveal {
+  from {
+    opacity: 0;
+    scale: 0.94;
+  }
+}
+
+@keyframes card-settle {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(-1deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-3deg);
+  }
+}
+
+.card-settle {
+  transform: rotate(-3deg);
+  animation: card-settle 900ms var(--ease-out-quint) 120ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {
