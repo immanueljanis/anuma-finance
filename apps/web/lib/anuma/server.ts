@@ -101,7 +101,7 @@ export async function syncRoot(conn: Connection): Promise<{ root: string; member
   return { root: fromBe32(root).toString(), members: commitments.length, signature };
 }
 
-const RELAYABLE = new Set(["open_credit", "borrow", "repay", "mark_default"].map((n) => Buffer.from(discriminator("global", n)).toString("hex")));
+const RELAYABLE = new Set(["open_credit", "deposit", "borrow", "repay", "mark_default"].map((n) => Buffer.from(discriminator("global", n)).toString("hex")));
 const OPEN_CREDIT = Buffer.from(discriminator("global", "open_credit")).toString("hex");
 
 /**

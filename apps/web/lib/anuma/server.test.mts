@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { Identity } from "@semaphore-protocol/identity";
 import { ComputeBudgetProgram, Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { fromBe32 } from "../zk/encoding.ts";
-import { borrowIx, markDefaultIx, openCreditIx, repayIx } from "./program.ts";
+import { borrowIx, depositIx, markDefaultIx, openCreditIx, repayIx } from "./program.ts";
 import { checkRelayable, groupRoot, normalizeNik, personIdFor } from "./server.ts";
 
 const server = Keypair.generate().publicKey;
@@ -31,6 +31,13 @@ test("relayer accepts borrow, repay and mark_default that do not involve its key
   assert.equal(checkRelayable(txOf(borrowIx({ pseudonym, credit, merchantToken: token, amount: 1n })), server), null);
   assert.equal(checkRelayable(txOf(repayIx({ payer: pseudonym, credit, payerToken: token, amount: 1n })), server), null);
   assert.equal(checkRelayable(txOf(markDefaultIx({ credit })), server), null);
+});
+
+test("relayer accepts a lender deposit but never one that spends the relayer's tokens", () => {
+  const lender = Keypair.generate().publicKey;
+  const token = Keypair.generate().publicKey;
+  assert.equal(checkRelayable(txOf(depositIx({ lender, lenderToken: token, amount: 1n })), server), null);
+  assert.match(checkRelayable(txOf(depositIx({ lender: server, lenderToken: token, amount: 1n })), server) ?? "", /relayer key/);
 });
 
 test("relayer rejects a repay that would spend the relayer's own tokens", () => {
