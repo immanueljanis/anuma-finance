@@ -1,179 +1,71 @@
-import { PublicKey } from "@solana/web3.js";
-import { ArrowRight, Check, EyeOff, Fingerprint, Globe, KeyRound, Lock, ShieldCheck, Wallet, X } from "lucide-react";
+import { ArrowRight, Check, Fingerprint, Globe, KeyRound, Lock, ShieldCheck, Wallet, X } from "lucide-react";
+import { Inter } from "next/font/google";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CreditCard } from "@/components/credit/credit-card";
-import { lineStatus } from "@/components/credit/line-status";
-import { GuillocheBand, GuillocheRosette } from "@/components/landing/guilloche";
+import { LandingHero } from "@/components/landing/landing-hero";
+import { LandingMotion } from "@/components/landing/landing-motion";
+import { Words } from "@/components/landing/words";
 
-const SAMPLE_LINE = {
-  pseudonym: new PublicKey("Gb9SpQz7d3mPaxWv4nXrK1TqYb6cHjLu2EoA8fRsuHg4"),
-  nullifier: new Uint8Array(32),
-  limit: 37_500_000n,
-  debt: 0n,
-  dueTs: 0n,
-  repaidCount: 1,
-  defaulted: false,
-  bump: 255,
-  size: 100,
-};
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 const REPO = "https://github.com/immanueljanis/anuma-finance";
 
-function Annotation({ icon, children, className }: { icon: ReactNode; children: ReactNode; className: string }) {
+/** Two-tone heading that echoes the hero: a gray first line and a dark second line pulled up over it, revealed word by word. */
+function Heading({ light, dark, center = false }: { light: string; dark: string; center?: boolean }) {
   return (
-    <p
-      className={`absolute z-10 hidden max-w-56 items-start gap-2 rounded-control border border-line bg-bg/95 px-3 py-2 text-caption text-ink-2 shadow-[var(--shadow-raise)] backdrop-blur-sm md:flex ${className}`}
-    >
-      <span className="mt-0.5 text-primary">{icon}</span>
-      <span>{children}</span>
-    </p>
+    <h2 data-reveal="words" className={center ? "text-center" : undefined}>
+      <span className="block text-4xl leading-none font-normal tracking-tighter text-gray-500 md:text-5xl">
+        <Words text={light} />
+      </span>
+      <span className="-mt-1 block text-4xl leading-none font-normal tracking-tighter text-[#202A36] md:text-5xl">
+        <Words text={dark} />
+      </span>
+    </h2>
   );
 }
 
-function Hero() {
+function Section({ id, tone, children }: { id?: string; tone: "gray" | "white"; children: ReactNode }) {
   return (
-    <section className="relative overflow-hidden border-b border-line">
-      <div className="mx-auto grid w-full max-w-[72rem] items-center gap-14 px-4 pt-14 pb-20 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:px-8 lg:pt-20 lg:pb-28">
-        <div className="animate-fade-up">
-          <p className="inline-flex items-center gap-2 rounded-full border border-primary-line bg-primary-soft px-3 py-1 text-caption font-medium text-primary">
-            <span aria-hidden className="size-1.5 rounded-full bg-primary" />
-            Live on Solana devnet
-          </p>
-          <h1 className="mt-6 font-display text-[clamp(2.75rem,6vw,4.75rem)] leading-[1.02] font-medium tracking-[-0.02em] text-ink [font-variation-settings:'opsz'_96]">
-            Borrow without showing who you are.
-          </h1>
-          <p className="mt-6 max-w-[34rem] text-lead text-ink-2">
-            Anuma gives verified people an unsecured credit line on Solana. You prove you passed KYC with a zero-knowledge proof, from a fresh
-            wallet. Lenders learn that a verified person owns the line. Nobody learns which one.
-          </p>
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link
-              href="/app"
-              className="inline-flex h-12 items-center gap-2 rounded-control bg-primary px-5 font-medium text-on-primary transition-colors duration-150 hover:bg-primary-hover active:bg-primary-active"
-            >
-              Open the app
-              <ArrowRight aria-hidden className="size-4" />
-            </Link>
-            <Link
-              href="#how"
-              className="inline-flex h-12 items-center rounded-control border border-line-strong px-5 font-medium text-ink transition-colors duration-150 hover:bg-surface"
-            >
-              How it works
-            </Link>
-          </div>
-          <p className="mt-8 text-small text-muted">
-            Semaphore v4 proofs, verified on chain in about 108k compute units. Pays any Solana Pay merchant.
-          </p>
-        </div>
-
-        <div className="relative mx-auto w-full max-w-[34rem]">
-          <GuillocheRosette
-            reveal
-            className="pointer-events-none absolute top-1/2 left-1/2 aspect-square w-[128%] max-w-none -translate-x-1/2 -translate-y-1/2 text-primary opacity-[0.28]"
-          />
-          <div className="card-settle relative">
-            <CreditCard credit={SAMPLE_LINE} status={lineStatus(SAMPLE_LINE, 30n, 0)} startLimit={25_000_000n} maxLimit={100_000_000n} graceSecs={30n} now={0} />
-          </div>
-          <Annotation icon={<ShieldCheck aria-hidden className="size-3.5" />} className="-top-12 -left-14">
-            Zero-knowledge proof checked by the program
-          </Annotation>
-          <Annotation icon={<EyeOff aria-hidden className="size-3.5" />} className="-right-8 -bottom-8">
-            Owner hidden among every verified person
-          </Annotation>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const COMPARE: { label: string; collateral: string; identity: string; anuma: string }[] = [
-  { label: "Capital you lock", collateral: "More than the loan", identity: "None", anuma: "None" },
-  { label: "Who sees your history", collateral: "Everyone, by wallet", identity: "The lender, and anyone who links the wallet", anuma: "Nobody: each line uses a fresh wallet" },
-  { label: "One person, many accounts", collateral: "Not a concern", identity: "Hard to stop", anuma: "Impossible: one person, one line" },
-  { label: "A default follows", collateral: "Nobody", identity: "Your public identity", anuma: "The person, without naming them" },
-];
-
-function Compare() {
-  return (
-    <section className="mx-auto w-full max-w-[72rem] px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-      <div className="max-w-[40rem]">
-        <h2 className="font-display text-[clamp(2rem,4vw,3rem)] leading-[1.08] font-medium tracking-[-0.015em] text-ink [font-variation-settings:'opsz'_72]">
-          On chain today, credit costs you capital or privacy.
-        </h2>
-        <p className="mt-4 text-lead text-ink-2">
-          A wallet has no identity, so DeFi lends only against collateral. Linking your identity to a wallet fixes that, and exposes its whole
-          history.
-        </p>
-      </div>
-      <div className="mt-12 overflow-x-auto">
-        <table className="w-full min-w-[44rem] border-collapse text-left">
-          <thead>
-            <tr className="text-small text-muted">
-              <th scope="col" className="w-[22%] pb-4 font-medium">
-                <span className="sr-only">Property</span>
-              </th>
-              <th scope="col" className="pb-4 font-medium">Collateral lending</th>
-              <th scope="col" className="pb-4 font-medium">Identity-linked credit</th>
-              <th scope="col" className="rounded-t-panel bg-primary px-5 pt-4 pb-4 font-semibold text-on-primary">Anuma</th>
-            </tr>
-          </thead>
-          <tbody>
-            {COMPARE.map((row, i) => (
-              <tr key={row.label} className="border-t border-line">
-                <th scope="row" className="py-5 pr-6 align-top text-small font-semibold text-ink">
-                  {row.label}
-                </th>
-                <td className="py-5 pr-6 align-top text-small text-ink-2">{row.collateral}</td>
-                <td className="py-5 pr-6 align-top text-small text-ink-2">{row.identity}</td>
-                <td className={`bg-primary-soft px-5 py-5 align-top text-small font-medium text-ink ${i === COMPARE.length - 1 ? "rounded-b-panel" : ""}`}>
-                  {row.anuma}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <section id={id} className={`scroll-mt-4 overflow-x-clip ${tone === "gray" ? "bg-gray-50" : "bg-white"}`}>
+      <div className="mx-auto w-full max-w-7xl px-8 py-24 md:py-32">{children}</div>
     </section>
   );
 }
 
 const STEPS = [
   { icon: Wallet, title: "Connect your wallet", body: "Your main wallet proves you are you, once. It never pays or borrows." },
-  { icon: Fingerprint, title: "Create a private identity", body: "Sign one message. Your browser turns the signature into a Semaphore identity. Nothing is sent." },
-  { icon: ShieldCheck, title: "Verify once", body: "The issuer checks your NIK and adds your identity to the verified group. The chain stores a keyed hash, never the number." },
-  { icon: KeyRound, title: "Open a line from a fresh wallet", body: "Your browser proves you belong to the group, in under a second. A relayer pays the fee, so the new wallet needs no SOL." },
+  { icon: Fingerprint, title: "Create a private identity", body: "Sign one message. Your browser turns it into a Semaphore identity. Nothing is sent." },
+  { icon: ShieldCheck, title: "Verify once", body: "The issuer checks your NIK. The chain stores a keyed hash of it, never the number." },
+  { icon: KeyRound, title: "Open a line from a fresh wallet", body: "Your browser proves you are verified, in under a second. A relayer pays the fee." },
 ];
 
 function HowItWorks() {
   return (
-    <section id="how" className="scroll-mt-20 border-y border-line bg-surface">
-      <div className="mx-auto w-full max-w-[72rem] px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-        <h2 className="max-w-[36rem] font-display text-[clamp(2rem,4vw,3rem)] leading-[1.08] font-medium tracking-[-0.015em] text-ink [font-variation-settings:'opsz'_72]">
-          Four steps, about a minute.
-        </h2>
-        <ol className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <li key={step.title} className="relative">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-9 items-center justify-center rounded-full bg-primary text-small font-semibold tabular text-on-primary">{i + 1}</span>
-                  <span aria-hidden className="hidden h-px flex-1 bg-line-strong lg:block" />
-                  <Icon aria-hidden className="size-5 text-primary" />
-                </div>
-                <h3 className="mt-5 text-body font-semibold text-ink">{step.title}</h3>
-                <p className="mt-2 text-small text-ink-2">{step.body}</p>
-              </li>
-            );
-          })}
-        </ol>
-        <p className="mt-14 max-w-[44rem] text-body text-ink-2">
-          Then pay any Solana Pay merchant from your line and repay from the same pseudonym. Each on-time repayment raises the limit by half:{" "}
-          <span className="font-medium whitespace-nowrap tabular text-ink">25 → 37.50 → 56.25 → 84.38 → 100 mUSDC.</span>
-        </p>
-      </div>
-    </section>
+    <Section id="how" tone="gray">
+      <Heading light="Verify once." dark="Borrow privately." />
+      <p data-reveal="up" className="mt-6 max-w-2xl text-lg text-gray-600">
+        Four steps, about a minute. Only step three asks for personal data, and only the issuer sees it.
+      </p>
+      <ol data-reveal="stagger" className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {STEPS.map((step, i) => {
+          const Icon = step.icon;
+          return (
+            <li key={step.title} data-tilt className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-200 transition-shadow hover:shadow-md">
+              <div className="flex items-center justify-between">
+                <span className="flex size-9 items-center justify-center rounded-full bg-[#202A36] text-sm font-semibold text-white">{i + 1}</span>
+                <Icon aria-hidden className="size-5 text-gray-500" />
+              </div>
+              <h3 className="mt-6 font-semibold text-gray-900">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">{step.body}</p>
+            </li>
+          );
+        })}
+      </ol>
+      <p data-reveal="up" className="mt-12 max-w-3xl text-gray-600">
+        Then pay any Solana Pay merchant from your line, and repay from the same wallet. Each on-time repayment raises your limit by half:{" "}
+        <span className="font-medium whitespace-nowrap text-gray-900">25 → 37.50 → 56.25 → 84.38 → 100 mUSDC.</span>
+      </p>
+    </Section>
   );
 }
 
@@ -186,172 +78,220 @@ const PUBLIC_ROWS = [
 const PRIVATE_ROWS = [
   ["Your main wallet", "Signs the one-time verification. Never appears in a credit transaction."],
   ["Your NIK", "Seen by the issuer once. The chain stores a hash only the issuer key can produce."],
-  ["Which member you are", "The proof hides you among every verified person."],
+  ["Which member you are", "The zero-knowledge proof hides you among every verified person."],
 ];
 
-function Boundary() {
+function Privacy() {
+  const columns = [
+    { title: "Public on Solana", icon: Globe, rows: PUBLIC_ROWS, dark: false, reveal: "left" },
+    { title: "Known only to you", icon: Lock, rows: PRIVATE_ROWS, dark: true, reveal: "right" },
+  ];
   return (
-    <section className="relative overflow-hidden bg-vault text-vault-ink">
-      <GuillocheBand className="absolute inset-x-0 top-0 h-24 w-full text-champagne opacity-35" />
-      <GuillocheRosette className="absolute -right-48 -bottom-48 size-[44rem] text-champagne opacity-[0.1]" />
-      <div className="relative mx-auto w-full max-w-[72rem] px-4 pt-32 pb-24 sm:px-6 lg:px-8 lg:pb-32">
-        <h2 className="max-w-[40rem] font-display text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.06] font-medium tracking-[-0.015em] [font-variation-settings:'opsz'_72]">
-          What the chain sees, and what it never will.
-        </h2>
-        <div className="mt-14 grid gap-10 lg:grid-cols-2 lg:gap-16">
-          {[
-            { title: "Public on Solana", icon: Globe, rows: PUBLIC_ROWS },
-            { title: "Known only to you", icon: Lock, rows: PRIVATE_ROWS },
-          ].map((column) => {
-            const Icon = column.icon;
-            return (
-              <div key={column.title}>
-                <h3 className="flex items-center gap-2 text-body font-semibold text-champagne">
-                  <Icon aria-hidden className="size-4" />
-                  {column.title}
-                </h3>
-                <dl className="mt-5 divide-y divide-vault-line border-y border-vault-line">
-                  {column.rows.map(([label, note]) => (
-                    <div key={label} className="grid gap-1 py-5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-6">
-                      <dt className="font-medium">{label}</dt>
-                      <dd className="text-small leading-relaxed text-vault-muted">{note}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            );
-          })}
-        </div>
+    <Section id="privacy" tone="white">
+      <Heading light="The chain sees a verified person." dark="Never which one." />
+      <div className="mt-16 grid gap-6 lg:grid-cols-2">
+        {columns.map((column) => {
+          const Icon = column.icon;
+          return (
+            <div
+              key={column.title}
+              data-reveal={column.reveal}
+              data-tilt
+              className={`rounded-3xl p-8 ${column.dark ? "bg-[#202A36] text-white" : "bg-gray-50 ring-1 ring-gray-200"}`}
+            >
+              <h3 className={`flex items-center gap-2 font-semibold ${column.dark ? "text-white" : "text-gray-900"}`}>
+                <Icon aria-hidden className="size-5" />
+                {column.title}
+              </h3>
+              <dl className="mt-6 flex flex-col gap-5">
+                {column.rows.map(([label, note]) => (
+                  <div key={label}>
+                    <dt className="font-medium">{label}</dt>
+                    <dd className={`mt-1 text-sm leading-relaxed ${column.dark ? "text-gray-300" : "text-gray-600"}`}>{note}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          );
+        })}
       </div>
-    </section>
+    </Section>
   );
 }
 
-function OnePersonOneLine() {
+const COMPARE = [
+  { label: "Capital you lock", collateral: "More than the loan", identity: "None", anuma: "None" },
+  { label: "Who sees your history", collateral: "Everyone, by wallet", identity: "The lender, and anyone who links the wallet", anuma: "Nobody: each line uses a fresh wallet" },
+  { label: "One person, many accounts", collateral: "Not a concern", identity: "Hard to stop", anuma: "Impossible: one person, one line" },
+  { label: "A default follows", collateral: "Nobody", identity: "Your public identity", anuma: "The person, without naming them" },
+];
+
+function Why() {
   return (
-    <section className="mx-auto grid w-full max-w-[72rem] items-center gap-14 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
-      <div>
-        <h2 className="font-display text-[clamp(2rem,4vw,3rem)] leading-[1.08] font-medium tracking-[-0.015em] text-ink [font-variation-settings:'opsz'_72]">
-          One person, one line, whatever the wallet.
-        </h2>
-        <p className="mt-5 text-lead text-ink-2">
-          Every proof carries a nullifier computed from your identity secret and the Anuma scope. It reveals nothing about you, and it is the same
-          for every wallet you use. The program seeds each credit line with it, so a second line, or a fresh start after a default, is refused on
-          chain.
-        </p>
+    <Section id="why" tone="gray">
+      <Heading light="On chain, credit costs capital or privacy." dark="Anuma costs neither." />
+      <div data-reveal="up" className="mt-16 overflow-x-auto rounded-3xl bg-white ring-1 ring-gray-200">
+        <table className="w-full min-w-[44rem] text-left">
+          <thead>
+            <tr className="text-sm text-gray-500">
+              <th scope="col" className="w-1/4 px-6 py-5 font-medium">
+                <span className="sr-only">Property</span>
+              </th>
+              <th scope="col" className="px-6 py-5 font-medium">Collateral lending</th>
+              <th scope="col" className="px-6 py-5 font-medium">Identity-linked credit</th>
+              <th scope="col" className="bg-[#202A36] px-6 py-5 font-semibold text-white">Anuma</th>
+            </tr>
+          </thead>
+          <tbody data-reveal="stagger">
+            {COMPARE.map((row) => (
+              <tr key={row.label} className="border-t border-gray-200">
+                <th scope="row" className="px-6 py-5 align-top text-sm font-semibold text-gray-900">
+                  {row.label}
+                </th>
+                <td className="px-6 py-5 align-top text-sm text-gray-600">{row.collateral}</td>
+                <td className="px-6 py-5 align-top text-sm text-gray-600">{row.identity}</td>
+                <td className="bg-gray-100 px-6 py-5 align-top text-sm font-medium text-gray-900">{row.anuma}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <figure aria-label="Two wallets, one nullifier" className="rounded-object border border-line bg-bg p-6 shadow-[var(--shadow-raise)] sm:p-8">
-        {[
-          { wallet: "Gb9S…uHg4", note: "First line", ok: true },
-          { wallet: "9rso…SB98", note: "Brand-new wallet, same person", ok: false },
-        ].map((row, i) => (
-          <div key={row.wallet} className={`grid grid-cols-[1fr_auto_1fr] items-center gap-3 ${i ? "mt-6 border-t border-line pt-6" : ""}`}>
-            <div>
-              <p className="text-caption text-muted">{row.note}</p>
-              <p className="mt-1 font-mono text-small text-ink">{row.wallet}</p>
-            </div>
-            <ArrowRight aria-hidden className="size-4 text-muted" />
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-caption text-muted">Nullifier</p>
-                <p className="mt-1 font-mono text-small text-ink">0600c3…dfb6</p>
+    </Section>
+  );
+}
+
+function OneLine() {
+  const rows = [
+    { wallet: "Gb9S…uHg4", note: "First line", ok: true },
+    { wallet: "9rso…SB98", note: "Brand-new wallet, same person", ok: false },
+  ];
+  return (
+    <Section tone="white">
+      <div className="grid items-center gap-16 lg:grid-cols-2">
+        <div>
+          <Heading light="One person, one line." dark="Whatever the wallet." />
+          <p data-reveal="up" className="mt-6 text-lg text-gray-600">
+            Every proof carries a nullifier computed from your identity secret. It reveals nothing about you, and it is the same for every wallet you
+            use. The program seeds each credit line with it, so a second line, or a fresh start after a default, is refused on chain.
+          </p>
+        </div>
+        <figure data-reveal="right" data-tilt aria-label="Two wallets, one nullifier" className="rounded-3xl bg-gray-50 p-8 ring-1 ring-gray-200">
+          <div data-reveal="stagger">
+            {rows.map((row, i) => (
+              <div key={row.wallet} className={`grid grid-cols-[1fr_auto_1fr] items-center gap-4 ${i ? "mt-6 border-t border-gray-200 pt-6" : ""}`}>
+                <div>
+                  <p className="text-xs text-gray-500">{row.note}</p>
+                  <p className="mt-1 font-mono text-sm text-gray-900">{row.wallet}</p>
+                </div>
+                <ArrowRight aria-hidden className="size-4 text-gray-400" />
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-gray-500">Nullifier</p>
+                    <p className="mt-1 font-mono text-sm text-gray-900">0600c3…dfb6</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
+                      row.ok ? "bg-[#202A36] text-white" : "bg-gray-300 text-gray-800"
+                    }`}
+                  >
+                    {row.ok ? <Check aria-hidden className="size-3.5" /> : <X aria-hidden className="size-3.5" />}
+                    {row.ok ? "Opened" : "Refused"}
+                  </span>
+                </div>
               </div>
-              <span
-                className={`inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-caption font-medium ${
-                  row.ok ? "border-primary-line bg-primary-soft text-primary" : "border-danger-line bg-danger-soft text-danger"
-                }`}
-              >
-                {row.ok ? <Check aria-hidden className="size-3.5" /> : <X aria-hidden className="size-3.5" />}
-                {row.ok ? "Opened" : "Refused"}
-              </span>
-            </div>
+            ))}
           </div>
-        ))}
-        <figcaption className="mt-6 text-caption text-muted">Same identity, same nullifier: the program refuses the second account.</figcaption>
-      </figure>
-    </section>
+          <figcaption className="mt-6 text-xs text-gray-500">Same identity, same nullifier: the program refuses the second account.</figcaption>
+        </figure>
+      </div>
+    </Section>
   );
 }
 
 function SolanaPay() {
   return (
-    <section className="border-t border-line bg-surface">
-      <div className="mx-auto grid w-full max-w-[72rem] items-center gap-14 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-28">
-        <figure aria-label="A Solana Pay invoice paid from an Anuma line" className="order-last lg:order-first">
-          <div className="rounded-panel border border-line bg-bg p-5 font-mono text-caption leading-relaxed break-all text-ink-2">
+    <Section id="pay" tone="gray">
+      <div className="grid items-center gap-16 lg:grid-cols-2">
+        <figure data-reveal="stagger" aria-label="A Solana Pay invoice paid from an Anuma line" className="order-last lg:order-first">
+          <div className="rounded-3xl bg-white p-6 font-mono text-xs leading-relaxed break-all text-gray-600 ring-1 ring-gray-200">
             solana:84t9…FBVX?amount=18&amp;spl-token=GCau…NhoL&amp;reference=C22Q…vUm&amp;label=Warung%20Anuma
           </div>
-          <div className="mt-4 flex items-center justify-between gap-4 rounded-panel border border-primary-line bg-bg p-5">
+          <div className="mt-4 flex items-center justify-between gap-4 rounded-3xl bg-white p-6 ring-1 ring-gray-200">
             <div>
-              <p className="text-small text-muted">Warung Anuma · Side-event ticket</p>
-              <p className="mt-1 text-title font-semibold tabular text-ink">
-                Paid 18.00 <span className="text-body font-normal text-muted">mUSDC</span>
+              <p className="text-sm text-gray-500">Warung Anuma · Side-event ticket</p>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                Paid 18.00 <span className="text-base font-normal text-gray-500">mUSDC</span>
               </p>
             </div>
-            <span className="inline-flex h-7 items-center gap-1.5 rounded-full border border-primary-line bg-primary-soft px-2.5 text-caption font-medium text-primary">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#202A36] px-3 py-1 text-xs font-medium text-white">
               <Check aria-hidden className="size-3.5" />
               Found by reference
             </span>
           </div>
         </figure>
         <div>
-          <h2 className="font-display text-[clamp(2rem,4vw,3rem)] leading-[1.08] font-medium tracking-[-0.015em] text-ink [font-variation-settings:'opsz'_72]">
-            Pays any Solana Pay merchant, today.
-          </h2>
-          <p className="mt-5 text-lead text-ink-2">
+          <Heading light="Pay any Solana Pay merchant." dark="Starting today." />
+          <p data-reveal="up" className="mt-6 text-lg text-gray-600">
             Paste a standard Solana Pay link. The vault pays the merchant, the invoice reference rides along, and the shop confirms the payment the
             way it confirms any other. No integration, and the shop never learns who bought.
           </p>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
 
-const FACTS = [
-  ["Proof system", "Semaphore v4: Groth16 over BN254, a 16-level Merkle tree of verified identities."],
-  ["On-chain check", "groth16-solana through the alt_bn128 syscalls: 107,675 compute units per new line."],
-  ["Proving", "Under a second in the browser. The identity secret never leaves it."],
-  ["Fees", "Paid by a relayer, so a pseudonym never holds SOL that could link it to you."],
+const FACTS: { term: string; figure: number; decimals?: number; unit: string; detail: string }[] = [
+  { term: "On-chain check", figure: 107675, unit: "compute units", detail: "groth16-solana verifies each new line through the alt_bn128 syscalls." },
+  { term: "Proving", figure: 0.7, decimals: 1, unit: "seconds", detail: "Measured in Chrome. The identity secret never leaves the browser." },
+  { term: "Proof system", figure: 16, unit: "tree levels", detail: "Semaphore v4: Groth16 over BN254 on a Merkle tree of verified identities." },
+  { term: "Root history", figure: 8, unit: "roots kept", detail: "A proof stays valid while up to seven new people register." },
 ];
 
 function UnderTheHood() {
   return (
-    <section className="mx-auto w-full max-w-[72rem] px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
-      <h2 className="text-title font-semibold text-ink">Under the hood</h2>
-      <dl className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2">
-        {FACTS.map(([term, detail]) => (
-          <div key={term} className="border-t border-line pt-5">
-            <dt className="text-small font-semibold text-ink">{term}</dt>
-            <dd className="mt-1.5 text-small text-ink-2">{detail}</dd>
+    <Section tone="white">
+      <Heading light="Under the hood." dark="Measured, not promised." />
+      <dl data-reveal="stagger" className="mt-16 grid gap-6 sm:grid-cols-2">
+        {FACTS.map((fact) => (
+          <div key={fact.term} data-tilt className="rounded-3xl bg-gray-50 p-6 ring-1 ring-gray-200">
+            <dt className="text-sm font-semibold text-gray-500">{fact.term}</dt>
+            <dd className="mt-3">
+              <span className="text-4xl font-normal tracking-tighter text-[#202A36] tabular-nums">
+                <span data-count={fact.figure} data-dec={fact.decimals ?? 0}>
+                  {fact.figure.toLocaleString("en-US", { minimumFractionDigits: fact.decimals ?? 0 })}
+                </span>
+              </span>
+              <span className="ml-2 text-gray-500">{fact.unit}</span>
+              <span className="mt-3 block text-sm leading-relaxed text-gray-600">{fact.detail}</span>
+            </dd>
           </div>
         ))}
       </dl>
-    </section>
+    </Section>
   );
 }
 
 function Closing() {
   return (
-    <section className="relative overflow-hidden border-t border-line">
-      <GuillocheRosette className="absolute top-1/2 left-1/2 size-[46rem] -translate-x-1/2 -translate-y-1/2 text-primary opacity-[0.08]" />
-      <div className="relative mx-auto flex w-full max-w-[72rem] flex-col items-center px-4 py-24 text-center sm:px-6 lg:px-8 lg:py-32">
-        <h2 className="max-w-[36rem] font-display text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.06] font-medium tracking-[-0.015em] text-ink [font-variation-settings:'opsz'_72]">
-          Open a private credit line on devnet.
+    <section className="overflow-x-clip bg-[#202A36]">
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center px-8 py-24 text-center md:py-32">
+        <h2 data-reveal="words">
+          <span className="block text-4xl leading-none font-normal tracking-tighter text-gray-400 md:text-6xl">
+            <Words text="Your reputation." />
+          </span>
+          <span className="-mt-1 block text-4xl leading-none font-normal tracking-tighter text-white md:text-6xl">
+            <Words text="Not your identity." />
+          </span>
         </h2>
-        <p className="mt-4 max-w-[32rem] text-lead text-ink-2">About a minute from wallet to your first payment. Mock USDC, no real funds.</p>
-        <div className="mt-9 flex flex-wrap justify-center gap-3">
-          <Link
-            href="/app"
-            className="inline-flex h-12 items-center gap-2 rounded-control bg-primary px-5 font-medium text-on-primary transition-colors duration-150 hover:bg-primary-hover active:bg-primary-active"
-          >
+        <p data-reveal="up" className="mt-6 max-w-xl text-lg text-gray-300">
+          Open a private credit line on Solana devnet in about a minute. Mock USDC, no real funds.
+        </p>
+        <div data-reveal="up" className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <Link href="/app" className="rounded-full bg-white px-4 py-2 font-medium text-[#202A36] transition-colors hover:bg-gray-200">
             Open the app
-            <ArrowRight aria-hidden className="size-4" />
           </Link>
-          <Link
-            href="/pool"
-            className="inline-flex h-12 items-center rounded-control border border-line-strong bg-bg px-5 font-medium text-ink transition-colors duration-150 hover:bg-surface"
-          >
+          <Link href="/pool" className="rounded-full bg-gray-300 px-4 py-2 font-medium text-gray-800 transition-colors hover:bg-gray-400">
             See the lending pool
           </Link>
         </div>
@@ -362,14 +302,14 @@ function Closing() {
 
 function Footer() {
   return (
-    <footer className="border-t border-line">
-      <div className="mx-auto flex w-full max-w-[72rem] flex-wrap items-center justify-between gap-4 px-4 py-8 text-small text-muted sm:px-6 lg:px-8">
+    <footer className="bg-gray-50">
+      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-8 py-8 text-sm text-gray-500">
         <p>Anuma. Built during the Dev3pack Global Hackathon, November 2026. Devnet demo with mock USDC.</p>
-        <nav aria-label="Footer" className="flex gap-5">
-          <Link href="/merchant" className="hover:text-ink">
+        <nav aria-label="Footer" className="flex gap-6">
+          <Link href="/merchant" className="transition-colors hover:text-gray-900">
             Demo merchant
           </Link>
-          <a href={REPO} className="hover:text-ink" target="_blank" rel="noreferrer">
+          <a href={REPO} target="_blank" rel="noreferrer" className="transition-colors hover:text-gray-900">
             Source code
           </a>
         </nav>
@@ -380,16 +320,18 @@ function Footer() {
 
 export default function Landing() {
   return (
-    <>
-      <Hero />
-      <Compare />
+    <div className={`${inter.className} min-h-screen bg-gray-50`}>
+      <div id="scroll-progress" aria-hidden className="fixed inset-x-0 top-0 z-30 h-0.5 origin-left scale-x-0 bg-[#202A36]" />
+      <LandingHero />
       <HowItWorks />
-      <Boundary />
-      <OnePersonOneLine />
+      <Privacy />
+      <Why />
+      <OneLine />
       <SolanaPay />
       <UnderTheHood />
       <Closing />
       <Footer />
-    </>
+      <LandingMotion />
+    </div>
   );
 }
