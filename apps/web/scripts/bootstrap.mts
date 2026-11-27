@@ -3,8 +3,9 @@ import { PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.
 
 /**
  * One-time cluster setup with the server key from apps/web/.env.local: create the mock USDC mint,
- * initialize the program with the demo credit terms, create the demo merchant's token account and
- * fund the vault. Each step checks chain state first, so a rerun skips finished steps.
+ * initialize the program with the demo credit terms, create the demo merchant's token account, fund
+ * the vault, and register seven demo members so the first real user already hides among several
+ * people. Each step checks chain state first, so a rerun skips finished steps.
  * Usage: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/bootstrap.mts
  */
 process.loadEnvFile(new URL("../.env.local", import.meta.url));
@@ -14,6 +15,7 @@ const server = await import("../lib/anuma/server.ts");
 const USDC = 1_000_000n;
 const TERMS = { startLimit: 25n * USDC, maxUnsecuredLimit: 100n * USDC, loanTermSecs: 120n, graceSecs: 30n };
 const VAULT_TARGET = 5_000n * USDC;
+const DEMO_MEMBERS = 7;
 
 const conn = server.rpc();
 const admin = server.serverKeypair();
@@ -52,6 +54,28 @@ if (vaultBalance < VAULT_TARGET) {
   );
   console.log(`deposited ${top / USDC} mock USDC into the vault`);
 }
+
+const { Identity } = await import("@semaphore-protocol/identity");
+const { Keypair } = await import("@solana/web3.js");
+const { be32 } = await import("../lib/zk/encoding.ts");
+let seeded = 0;
+for (let i = 1; i <= DEMO_MEMBERS; i++) {
+  const nik = `99990000000000${String(i).padStart(2, "0")}`;
+  const personId = server.personIdFor(nik);
+  if (await conn.getAccountInfo(program.personPda(personId))) continue;
+  const kycWallet = Keypair.generate();
+  const commitment = be32(new Identity(`anuma-demo-member-${i}`).commitment);
+  await sendAndConfirmTransaction(
+    conn,
+    new Transaction().add(program.registerIx({ issuer: admin.publicKey, kycWallet: kycWallet.publicKey, personId, commitment })),
+    [admin, kycWallet],
+  );
+  seeded++;
+}
+if (seeded) console.log(`registered ${seeded} demo members so a proof hides its owner among several people`);
+const synced = await server.syncRoot(conn);
+if (synced.signature) console.log(`posted Merkle root for ${synced.members} members`);
+config = (await server.fetchConfig(conn)) ?? config;
 
 console.log({
   usdcMint: config.usdcMint.toBase58(),
