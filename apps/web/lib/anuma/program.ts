@@ -1,5 +1,6 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Buffer } from "buffer";
 import { PublicKey, SystemProgram, TransactionInstruction, type AccountMeta } from "@solana/web3.js";
 
 /**
