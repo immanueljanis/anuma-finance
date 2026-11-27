@@ -1,0 +1,20 @@
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+anuma = "9k1zFVABWqqDQRJbfwQpucxWdbN7gJnTCbFFv5RL3nKd"
+
+[programs.devnet]
+anuma = "9k1zFVABWqqDQRJbfwQpucxWdbN7gJnTCbFFv5RL3nKd"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "cargo test"
+
+[hooks]
