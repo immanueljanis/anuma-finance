@@ -78,7 +78,7 @@ export function PrivacyBoundary({
               value: walletAddress ? <span className="font-mono text-caption text-ink-2">{shortKey(walletAddress, 4, 4)}</span> : undefined,
               note: "Signs the one-time verification only. It never appears in a credit transaction.",
             },
-            { label: "Your NIK", note: "Seen by the issuer once. The chain stores a keyed hash that cannot be reversed." },
+            { label: "Your ID number", note: "Seen by the issuer once. The chain stores a keyed hash that cannot be reversed." },
             { label: "Which member you are", note: `The zero-knowledge proof hides you among ${crowd}.` },
           ]}
         />

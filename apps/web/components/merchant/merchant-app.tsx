@@ -17,7 +17,7 @@ type Item = { id: string; name: string; detail: string; amount: bigint; icon: Lu
 
 const ITEMS: Item[] = [
   { id: "domain", name: "anuma.sol domain", detail: "1 year registration", amount: 12_000_000n, icon: AtSign },
-  { id: "ticket", name: "Side-event ticket", detail: "Jakarta builders night", amount: 18_000_000n, icon: Ticket },
+  { id: "ticket", name: "Side-event ticket", detail: "Builders night, 50 seats", amount: 18_000_000n, icon: Ticket },
   { id: "rpc", name: "RPC plan", detail: "1 month, 10M requests", amount: 24_000_000n, icon: Server },
 ];
 
@@ -95,7 +95,7 @@ export function MerchantApp() {
     const item = ITEMS.find((i) => i.id === selected) ?? ITEMS[0];
     const reference = Keypair.generate().publicKey;
     const url = encodeTransferRequest(
-      { recipient: new PublicKey(MERCHANT), amount: item.amount, splToken: new PublicKey(mint), references: [reference], label: "Warung Anuma", message: item.name },
+      { recipient: new PublicKey(MERCHANT), amount: item.amount, splToken: new PublicKey(mint), references: [reference], label: "Corner Store", message: item.name },
       6,
     );
     setWatch(null);
@@ -106,7 +106,7 @@ export function MerchantApp() {
     <div className="flex flex-col gap-8">
       <header className="max-w-[46rem]">
         <p className="text-small font-medium text-muted">Demo merchant</p>
-        <h1 className="mt-1 text-heading font-semibold tracking-tight text-ink">Warung Anuma</h1>
+        <h1 className="mt-1 text-heading font-semibold tracking-tight text-ink">Corner Store</h1>
         <p className="mt-2 text-lead text-ink-2">
           A shop that accepts Solana Pay and has never heard of Anuma. It issues a standard invoice and checks the payment by its reference key.
         </p>

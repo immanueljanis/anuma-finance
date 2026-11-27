@@ -21,7 +21,7 @@ test("a transfer request survives encode and parse, including spaces in label an
     amount: 18_000_000n,
     splToken: key(),
     references: [key(), key()],
-    label: "Warung Anuma",
+    label: "Corner Store",
     message: "Side-event ticket #42",
   };
   const url = encodeTransferRequest(request, 6);

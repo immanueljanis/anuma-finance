@@ -35,7 +35,7 @@ function Section({ id, tone, children }: { id?: string; tone: "gray" | "white"; 
 const STEPS = [
   { icon: Wallet, title: "Connect your wallet", body: "Your main wallet proves you are you, once. It never pays or borrows." },
   { icon: Fingerprint, title: "Create a private identity", body: "Sign one message. Your browser turns it into a Semaphore identity. Nothing is sent." },
-  { icon: ShieldCheck, title: "Verify once", body: "The issuer checks your NIK. The chain stores a keyed hash of it, never the number." },
+  { icon: ShieldCheck, title: "Verify once", body: "The issuer checks your government ID once. The chain stores a keyed hash of it, never the number." },
   { icon: KeyRound, title: "Open a line from a fresh wallet", body: "Your browser proves you are verified, in under a second. A relayer pays the fee." },
 ];
 
@@ -77,7 +77,7 @@ const PUBLIC_ROWS = [
 
 const PRIVATE_ROWS = [
   ["Your main wallet", "Signs the one-time verification. Never appears in a credit transaction."],
-  ["Your NIK", "Seen by the issuer once. The chain stores a hash only the issuer key can produce."],
+  ["Your ID number", "Seen by the issuer once. The chain stores a hash only the issuer key can produce."],
   ["Which member you are", "The zero-knowledge proof hides you among every verified person."],
 ];
 
@@ -214,11 +214,11 @@ function SolanaPay() {
       <div className="grid items-center gap-16 lg:grid-cols-2">
         <figure data-reveal="stagger" aria-label="A Solana Pay invoice paid from an Anuma line" className="order-last lg:order-first">
           <div className="rounded-3xl bg-white p-6 font-mono text-xs leading-relaxed break-all text-gray-600 ring-1 ring-gray-200">
-            solana:84t9…FBVX?amount=18&amp;spl-token=GCau…NhoL&amp;reference=C22Q…vUm&amp;label=Warung%20Anuma
+            solana:84t9…FBVX?amount=18&amp;spl-token=GCau…NhoL&amp;reference=C22Q…vUm&amp;label=Corner%20Store
           </div>
           <div className="mt-4 flex items-center justify-between gap-4 rounded-3xl bg-white p-6 ring-1 ring-gray-200">
             <div>
-              <p className="text-sm text-gray-500">Warung Anuma · Side-event ticket</p>
+              <p className="text-sm text-gray-500">Corner Store · Side-event ticket</p>
               <p className="mt-1 text-2xl font-semibold text-gray-900">
                 Paid 18.00 <span className="text-base font-normal text-gray-500">mUSDC</span>
               </p>

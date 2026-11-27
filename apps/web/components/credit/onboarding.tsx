@@ -42,15 +42,17 @@ function Step({ n, state, title, summary, children }: { n: number; state: StepSt
 export function Onboarding({ state }: { state: CreditState }) {
   const { setVisible } = useWalletModal();
   const { walletAddress, identity, registered, memberIndex, group, proof, actions } = state;
-  const [nik, setNik] = useState("");
+  const [idInput, setIdInput] = useState("");
   const sign = useAction(actions.createIdentity);
   const verify = useAction(actions.register);
   const open = useAction(actions.openCredit);
 
   const step = !walletAddress ? 1 : !identity ? 2 : !registered ? 3 : 4;
   const stateOf = (n: number): StepState => (n < step ? "done" : n === step ? "current" : "locked");
-  const nikDigits = nik.replace(/\D/g, "");
-  const nikValid = nikDigits.length === 16;
+  const idNumber = idInput.replace(/[\s-]+/g, "").toUpperCase();
+  const idValid = /^[A-Z0-9]{6,20}$/.test(idNumber);
+  const idProblem =
+    !idInput || idValid ? undefined : /[^A-Z0-9]/.test(idNumber) ? "Use letters and digits only" : `Enter 6 to 20 characters (${idNumber.length} so far)`;
   const crowd = group?.commitments.length ?? 0;
 
   return (
@@ -100,7 +102,7 @@ export function Onboarding({ state }: { state: CreditState }) {
             registered ? (
               <>Verified. You are one of {crowd} {crowd === 1 ? "member" : "members"}; on chain you are only commitment #{memberIndex + 1}.</>
             ) : (
-              "Demo issuer: any 16-digit NIK passes. One NIK registers one identity, ever."
+              "Use a passport, national ID card or driver's licence number. Demo issuer: any 6 to 20 letters or digits pass. One ID registers one identity, ever."
             )
           }
         >
@@ -108,30 +110,26 @@ export function Onboarding({ state }: { state: CreditState }) {
             className="flex max-w-md flex-col gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              if (nikValid) void verify.run(nikDigits);
+              if (idValid) void verify.run(idNumber);
             }}
           >
-            <Field
-              id="nik"
-              label="NIK (national ID number)"
-              hint="The chain stores HMAC(issuer key, NIK), never the number."
-              error={nik && !nikValid ? `Enter 16 digits (${nikDigits.length} so far)` : undefined}
-            >
+            <Field id="id-number" label="Government ID number" hint="The chain stores HMAC(issuer key, ID number), never the number." error={idProblem}>
               <input
-                id="nik"
-                inputMode="numeric"
+                id="id-number"
                 autoComplete="off"
-                placeholder="3174 0123 4567 0001"
-                value={nik}
-                onChange={(e) => setNik(e.target.value)}
-                aria-invalid={Boolean(nik) && !nikValid}
-                aria-describedby={nik && !nikValid ? "nik-error" : "nik-hint"}
+                autoCapitalize="characters"
+                spellCheck={false}
+                placeholder="e.g. P12345678"
+                value={idInput}
+                onChange={(e) => setIdInput(e.target.value)}
+                aria-invalid={Boolean(idProblem)}
+                aria-describedby={idProblem ? "id-number-error" : "id-number-hint"}
                 className={`${inputClass} font-mono tabular`}
               />
             </Field>
             <div>
-              <Button type="submit" size="lg" icon={<ShieldCheck aria-hidden className="size-4" />} disabled={!nikValid} busy={verify.busy} busyLabel="Verifying and registering">
-                Verify NIK
+              <Button type="submit" size="lg" icon={<ShieldCheck aria-hidden className="size-4" />} disabled={!idValid} busy={verify.busy} busyLabel="Verifying and registering">
+                Verify ID
               </Button>
             </div>
             {verify.error && <Notice tone="danger">{verify.error}</Notice>}

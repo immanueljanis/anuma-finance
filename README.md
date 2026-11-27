@@ -8,13 +8,13 @@ Built for the Dev3pack Global Hackathon (Solana), 27 to 29 November 2026.
 
 Every DeFi loan today is over-collateralized. A wallet has no identity and no history a lender can trust, so the only safe loan is one backed by more collateral than it lends. The alternative, linking a real identity to a wallet, exposes that wallet's whole on-chain history to the lender and to everyone else, and it still does not stop one person from farming many wallets.
 
-People who already live on chain (Indonesia is one of the largest retail crypto markets) have no way to borrow a small amount against their reputation without doxxing themselves.
+People who already live on chain have no way to borrow a small amount against their reputation without doxxing themselves.
 
 ## How Anuma works
 
 1. **Connect your main wallet.** It proves you are you, once. It never pays or borrows.
 2. **Create a private identity.** You sign one fixed message. The browser turns the deterministic Ed25519 signature into a [Semaphore v4](https://semaphore.pse.dev) identity. Nothing is sent.
-3. **Verify once.** The issuer checks your national ID number (NIK) and co-signs a `register` transaction. The chain stores only `HMAC(issuer key, NIK)` as the Person PDA seed and your identity commitment as a Merkle leaf. One NIK can register once, ever.
+3. **Verify once.** The issuer checks your government ID (passport, national ID card or driver's licence) and co-signs a `register` transaction. The chain stores only `HMAC(issuer key, ID number)` as the Person PDA seed and your identity commitment as a Merkle leaf. One ID can register once, ever.
 4. **Open an anonymous credit line.** Your browser proves membership in the verified group for a brand-new pseudonym wallet (about 0.6 to 0.9 s). The program verifies the Groth16 proof on chain and opens a Credit PDA seeded by the proof's nullifier. A relayer pays fees, so the pseudonym holds no SOL and has no history.
 
 Then you **pay any Solana Pay merchant** from the line, **repay** from the pseudonym, and the limit grows 50% with each on-time repayment (25 → 37.5 → 56.25 → 84.38 → 100 mUSDC). Miss the due time plus grace and anyone can mark the line defaulted.
@@ -26,8 +26,8 @@ sequenceDiagram
     participant P as Anuma program
     participant M as Any Solana Pay merchant
     U->>U: sign message → Semaphore identity
-    U->>I: NIK + identity commitment
-    I->>P: register (Person PDA = HMAC(key, NIK))
+    U->>I: ID number + identity commitment
+    I->>P: register (Person PDA = HMAC(key, ID number))
     I->>P: set_root (LeanIMT root of all commitments)
     U->>U: Groth16 proof for a fresh pseudonym key
     U->>I: open_credit signed by the pseudonym
@@ -43,7 +43,7 @@ sequenceDiagram
 | Public on Solana | Known only to you (and the issuer, once) |
 | --- | --- |
 | The pseudonym wallet of each line | Your main wallet: it signs the verification only and never appears in a credit transaction |
-| Limit, debt, due time, on-time repayments | Your NIK: the chain stores a keyed hash that cannot be reversed |
+| Limit, debt, due time, on-time repayments | Your ID number: the chain stores a keyed hash that cannot be reversed |
 | The nullifier: a one-way tag of the person, identical for every wallet that person tries | Which member you are: the proof hides you among every verified person |
 
 ## Why lenders can trust anonymous lines
@@ -56,7 +56,7 @@ sequenceDiagram
 
 ## Works with any Solana Pay merchant
 
-`borrow` pays the merchant's token account from the vault and carries the invoice's `reference` keys as read-only accounts. A merchant finds and validates the payment exactly as it would any Solana Pay payment (reference lookup plus token-balance check). The demo shop, Warung Anuma, uses no Anuma code at all.
+`borrow` pays the merchant's token account from the vault and carries the invoice's `reference` keys as read-only accounts. A merchant finds and validates the payment exactly as it would any Solana Pay payment (reference lookup plus token-balance check). The demo shop, Corner Store, uses no Anuma code at all.
 
 ## Architecture
 
@@ -85,7 +85,7 @@ apps/web/                Next.js 16 app
 ## Verification
 
 - `pnpm check`: lint, 31 unit tests and the production build. The tests pin the browser proof encoding to bytes a Rust `groth16-solana` verifier accepted, compare every instruction's discriminator, account order and signer flags with the IDL, and cover the relayer's signing rules.
-- `pnpm --filter web e2e`: 24 checks on a local validator with real proofs through the same relayer code the app uses. It covers registration, duplicate NIK, root sync, open credit, a proof made for another wallet, borrow over limit, a Solana Pay payment validated by reference, repayment and limit growth, default, and a defaulted person retrying with a new wallet.
+- `pnpm --filter web e2e`: 24 checks on a local validator with real proofs through the same relayer code the app uses. It covers registration, a duplicate ID number, root sync, open credit, a proof made for another wallet, borrow over limit, a Solana Pay payment validated by reference, repayment and limit growth, default, and a defaulted person retrying with a new wallet.
 
 ## Run it locally
 
@@ -114,7 +114,7 @@ Bootstrap creates the mock USDC mint, initializes the program with the demo term
 
 ## Honest limits of this demo
 
-- **Demo issuer.** Any 16-digit NIK passes. A production issuer would check the NIK with a licensed eKYC provider before co-signing.
+- **Demo issuer.** Any ID number of 6 to 20 letters or digits passes. A production issuer would verify the document with a licensed identity provider before co-signing, and key the person by issuing country, document type and number.
 - **One server key.** Admin, issuer, relayer and mock-USDC mint authority share one key. Production would split them, and root posting could move to an on-chain Poseidon tree.
 - **Relayer metadata.** The relayer sees IP addresses and timing. Production should accept relayed transactions over Tor or a mixnet, or let users pick any relayer.
 - **No interest and one open loan per line.** The credit logic is deliberately minimal to show the identity layer.
