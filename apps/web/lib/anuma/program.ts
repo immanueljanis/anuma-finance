@@ -119,10 +119,22 @@ export function depositIx(p: { lender: PublicKey; lenderToken: PublicKey; amount
   );
 }
 
-export function borrowIx(p: { pseudonym: PublicKey; credit: PublicKey; merchantToken: PublicKey; amount: bigint }) {
+/**
+ * Pays a merchant token account from the vault. `references` are Solana Pay reference keys, added
+ * as read-only remaining accounts that the program ignores; the merchant finds the payment by them.
+ */
+export function borrowIx(p: { pseudonym: PublicKey; credit: PublicKey; merchantToken: PublicKey; amount: bigint; references?: PublicKey[] }) {
   return ix(
     "borrow",
-    [r(p.pseudonym, true), r(configPda()), w(p.credit), w(vaultPda()), w(p.merchantToken), r(TOKEN_PROGRAM_ID)],
+    [
+      r(p.pseudonym, true),
+      r(configPda()),
+      w(p.credit),
+      w(vaultPda()),
+      w(p.merchantToken),
+      r(TOKEN_PROGRAM_ID),
+      ...(p.references ?? []).map((reference) => r(reference)),
+    ],
     u64(p.amount),
   );
 }

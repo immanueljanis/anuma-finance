@@ -14,7 +14,9 @@ import {
   type Signer,
 } from "@solana/web3.js";
 import * as program from "../lib/anuma/program.ts";
+import { encodeTransferRequest, findReference, parseTransferRequest, validateTransfer } from "../lib/solana-pay.ts";
 import { be32 } from "../lib/zk/encoding.ts";
+import { nullifierOf } from "../lib/zk/identity.ts";
 import { proveCredit } from "../lib/zk/prove.ts";
 
 /**
@@ -171,6 +173,14 @@ await sendAndConfirmTransaction(
 assert.equal((await getAccount(conn, program.vaultPda())).amount, 500n * USDC);
 ok("deposit moves lender funds into the vault");
 
+const lender = Keypair.generate();
+const lenderAta = await getOrCreateAssociatedTokenAccount(conn, admin, mint, lender.publicKey);
+await mintTo(conn, admin, mint, lenderAta.address, admin, 50n * USDC);
+await relay(new Transaction().add(program.depositIx({ lender: lender.publicKey, lenderToken: lenderAta.address, amount: 50n * USDC })), [lender]);
+assert.equal((await getAccount(conn, program.vaultPda())).amount, 550n * USDC);
+assert.equal(await conn.getBalance(lender.publicKey), 0);
+ok("a lender holding no SOL deposits through the relayer");
+
 const alice = members[1];
 const alicePseudonym = Keypair.generate();
 const opened = await openCredit(alice, alicePseudonym);
@@ -178,6 +188,8 @@ const aliceLine = await credit(opened.nullifier);
 assert.equal(aliceLine.limit, START);
 assert.ok(aliceLine.pseudonym.equals(alicePseudonym.publicKey));
 ok(`open_credit verifies a real proof (proving ${opened.provingMs} ms, ${opened.unitsConsumed} CU)`);
+assert.deepEqual(be32(nullifierOf(alice.identity)), opened.nullifier);
+ok("nullifierOf(identity) finds the line without a proof");
 assert.ok((opened.unitsConsumed ?? Infinity) < 400_000, "open_credit fits in 400k CU");
 
 await expectFailure("the same person cannot open a second line", ALREADY_EXISTS, () => openCredit(alice, Keypair.generate()));
@@ -191,19 +203,32 @@ await expectFailure("a proof made for another pseudonym is rejected", /InvalidPr
 
 const merchant = Keypair.generate();
 const merchantAta = await getOrCreateAssociatedTokenAccount(conn, admin, mint, merchant.publicKey);
-const borrow = (amount: bigint) =>
+const borrow = (amount: bigint, references: PublicKey[] = []) =>
   relay(
     new Transaction().add(
-      program.borrowIx({ pseudonym: alicePseudonym.publicKey, credit: program.creditPda(opened.nullifier), merchantToken: merchantAta.address, amount }),
+      program.borrowIx({ pseudonym: alicePseudonym.publicKey, credit: program.creditPda(opened.nullifier), merchantToken: merchantAta.address, amount, references }),
     ),
     [alicePseudonym],
   );
 
 await expectFailure("borrow above the limit", /OverLimit/, () => borrow(START + 1n));
-await borrow(20n * USDC);
+const reference = Keypair.generate().publicKey;
+const invoice = encodeTransferRequest(
+  { recipient: merchant.publicKey, amount: 20n * USDC, splToken: mint, references: [reference], label: "Warung Anuma", message: "Side-event ticket" },
+  6,
+);
+const request = parseTransferRequest(invoice, 6);
+await borrow(request.amount, request.references);
 assert.equal((await getAccount(conn, merchantAta.address)).amount, 20n * USDC);
 assert.equal((await credit(opened.nullifier)).debt, 20n * USDC);
 ok("borrow pays the merchant from the vault");
+const paidSignature = await findReference(conn, reference);
+assert.ok(paidSignature, "the payment is found by its Solana Pay reference");
+await validateTransfer(conn, paidSignature, { recipient: request.recipient, splToken: request.splToken, amount: request.amount });
+await expectFailure("validateTransfer rejects a wrong amount", /expected/, () =>
+  validateTransfer(conn, paidSignature, { recipient: request.recipient, splToken: request.splToken, amount: request.amount + 1n }),
+);
+ok("a Solana Pay invoice is paid from the credit line and validated by reference");
 await expectFailure("a second loan while one is open", /DebtOutstanding/, () => borrow(1n));
 
 const aliceAta = await getOrCreateAssociatedTokenAccount(conn, admin, mint, alicePseudonym.publicKey);
